@@ -101,20 +101,20 @@ export default function DetailRumahPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Back button & Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => router.back()}
-            className="p-2 rounded-xl bg-white border border-stone-200 hover:bg-stone-50 text-stone-600 transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-white border border-stone-200 hover:bg-stone-50 text-stone-600 transition-colors cursor-pointer shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black text-stone-900">Blok {house.code}</h1>
+              <h1 className="text-xl sm:text-2xl font-black text-stone-900">Blok {house.code}</h1>
               {house.is_merged && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
                   Unit Gabungan
@@ -128,11 +128,11 @@ export default function DetailRumahPage() {
         </div>
 
         {/* Tab Switcher: Timeline vs Surat Tagihan */}
-        <div className="flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200">
+        <div className="flex items-center w-full sm:w-auto bg-stone-100 p-1 rounded-xl border border-stone-200">
           <button
             type="button"
             onClick={() => setActiveTab('timeline')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'timeline'
                 ? 'bg-white text-stone-900 shadow-sm'
                 : 'text-stone-500 hover:text-stone-900'
@@ -143,13 +143,13 @@ export default function DetailRumahPage() {
           <button
             type="button"
             onClick={() => setActiveTab('tagihan')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'tagihan'
                 ? 'bg-white text-stone-900 shadow-sm'
                 : 'text-stone-500 hover:text-stone-900'
             }`}
           >
-            Surat Tagihan (Printable)
+            Surat Tagihan
           </button>
         </div>
       </div>

@@ -61,16 +61,16 @@ export default function DashboardPage() {
   const chartData = data?.chartData || [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Welcome Banner - White & Orange Aesthetic */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-500/[0.08] via-amber-500/[0.04] to-white border border-orange-200/80 p-6 sm:p-8 shadow-[0_2px_12px_rgba(249,115,22,0.06)]">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100/80 border border-orange-200 text-xs font-bold text-orange-700">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-orange-500/[0.08] via-amber-500/[0.04] to-white border border-orange-200/80 p-4 sm:p-6 lg:p-8 shadow-[0_2px_12px_rgba(249,115,22,0.06)]">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+          <div className="space-y-1.5 sm:space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-100/80 border border-orange-200 text-[11px] sm:text-xs font-bold text-orange-700">
               <Sparkles className="w-3.5 h-3.5 text-orange-600" />
               <span>Paradessa Household Dues</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-950 tracking-tight">
+            <h1 className="text-xl sm:text-3xl lg:text-4xl font-black text-stone-950 tracking-tight leading-tight">
               Buku Kas & Iuran Paradessa Habitat
             </h1>
             <p className="text-xs sm:text-sm text-stone-600 max-w-2xl font-normal leading-relaxed">
@@ -80,17 +80,17 @@ export default function DashboardPage() {
 
           {/* Quick Action Buttons for Bendahara */}
           {isAdmin ? (
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <div className="grid grid-cols-1 sm:flex sm:flex-wrap sm:items-center gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
               <Link
                 href="/pembayaran"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm shadow-md shadow-orange-500/25 active:scale-[0.98] transition-all"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-orange-500/25 active:scale-[0.98] transition-all"
               >
                 <Plus className="w-4 h-4 stroke-[2.5]" />
                 <span>Catat Pembayaran</span>
               </Link>
               <Link
                 href="/pengeluaran"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white hover:bg-stone-50 text-stone-800 font-bold text-sm border border-stone-200/90 shadow-sm active:scale-[0.98] transition-all"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl bg-white hover:bg-stone-50 text-stone-800 font-bold text-xs sm:text-sm border border-stone-200/90 shadow-xs active:scale-[0.98] transition-all"
               >
                 <TrendingDown className="w-4 h-4 text-rose-500" />
                 <span>Catat Pengeluaran</span>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
           ) : (
             <Link
               href={`/rumah/${selectedHouseCode}`}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm shadow-md shadow-orange-500/25 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-orange-500/25 transition-all"
             >
               <Building className="w-4 h-4" />
               <span>Status Rumah Blok {selectedHouseCode}</span>
@@ -109,75 +109,75 @@ export default function DashboardPage() {
       </div>
 
       {/* Top Metric Cards - Crisp White Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Cash Balance */}
-        <div className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-orange-200 transition-colors">
-          <div className="flex items-center justify-between text-stone-500 mb-2">
+        <div className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-orange-200 transition-colors">
+          <div className="flex items-center justify-between text-stone-500 mb-1.5">
             <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">Saldo Kas Saat Ini</span>
-            <div className="w-9 h-9 rounded-xl bg-orange-50 border border-orange-200/70 flex items-center justify-center text-orange-600">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-orange-50 border border-orange-200/70 flex items-center justify-center text-orange-600">
               <Wallet className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 tracking-tight">
             {formatRupiah(currentBalance)}
           </div>
-          <div className="mt-2.5 text-xs text-stone-500 flex items-center gap-1.5 font-medium">
+          <div className="mt-2 text-xs text-stone-500 flex items-center gap-1.5 font-medium">
             <span className="text-stone-400">Saldo Awal Bulan:</span>
             <span className="font-bold text-stone-700">{formatRupiah(thisMonth.saldoAwal)}</span>
           </div>
         </div>
 
         {/* This Month's Income */}
-        <div className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-emerald-200 transition-colors">
-          <div className="flex items-center justify-between text-stone-500 mb-2">
+        <div className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-emerald-200 transition-colors">
+          <div className="flex items-center justify-between text-stone-500 mb-1.5">
             <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">Pemasukan {thisMonth.monthName}</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-600 tracking-tight">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-emerald-600 tracking-tight">
             +{formatRupiah(thisMonth.pemasukan)}
           </div>
-          <div className="mt-2.5 text-xs text-emerald-700 flex items-center gap-1 font-semibold">
+          <div className="mt-2 text-xs text-emerald-700 flex items-center gap-1 font-semibold">
             <ArrowUpRight className="w-3.5 h-3.5" />
             <span>Iuran warga & kas masuk</span>
           </div>
         </div>
 
         {/* This Month's Expenses */}
-        <div className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-rose-200 transition-colors">
-          <div className="flex items-center justify-between text-stone-500 mb-2">
+        <div className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-rose-200 transition-colors">
+          <div className="flex items-center justify-between text-stone-500 mb-1.5">
             <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">Pengeluaran {thisMonth.monthName}</span>
-            <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-200/70 flex items-center justify-center text-rose-600">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-rose-50 border border-rose-200/70 flex items-center justify-center text-rose-600">
               <TrendingDown className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-rose-600 tracking-tight">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-rose-600 tracking-tight">
             -{formatRupiah(thisMonth.pengeluaran)}
           </div>
-          <div className="mt-2.5 text-xs text-rose-700 flex items-center gap-1 font-semibold">
+          <div className="mt-2 text-xs text-rose-700 flex items-center gap-1 font-semibold">
             <ArrowDownRight className="w-3.5 h-3.5" />
             <span>Listrik, sampah, perbaikan</span>
           </div>
         </div>
 
         {/* Collection Rate */}
-        <div className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-amber-200 transition-colors">
-          <div className="flex items-center justify-between text-stone-500 mb-2">
+        <div className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-amber-200 transition-colors">
+          <div className="flex items-center justify-between text-stone-500 mb-1.5">
             <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">Tingkat Penagihan</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/70 flex items-center justify-center text-amber-600">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 border border-amber-200/70 flex items-center justify-center text-amber-600">
               <PieChart className="w-4 h-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black text-orange-600">
+            <span className="text-xl sm:text-2xl lg:text-3xl font-black text-orange-600">
               {collectionRate.percentage}%
             </span>
             <span className="text-xs text-stone-500 font-medium">
               ({collectionRate.paid} / {collectionRate.billed} rumah)
             </span>
           </div>
-          <div className="w-full bg-stone-100 h-2.5 rounded-full mt-3 overflow-hidden">
+          <div className="w-full bg-stone-100 h-2.5 rounded-full mt-2.5 overflow-hidden">
             <div
               className="bg-gradient-to-r from-orange-500 to-amber-500 h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.min(100, collectionRate.percentage)}%` }}
@@ -189,61 +189,63 @@ export default function DashboardPage() {
       {/* Main Grid: 12-Month Bar Chart & Arrears Watchlist */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 12-Month Chart */}
-        <div className="lg:col-span-2 bg-white border border-stone-200/80 rounded-2xl p-6 shadow-[0_1px_4px_rgba(0,0,0,0.03)] space-y-4">
+        <div className="lg:col-span-2 bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-6 shadow-[0_1px_4px_rgba(0,0,0,0.03)] space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
             <div>
-              <h2 className="text-base font-extrabold text-stone-900 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-orange-600" />
+              <h2 className="text-sm sm:text-base font-extrabold text-stone-900 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-orange-600 shrink-0" />
                 <span>Tren Arus Kas 12 Bulan ({currentYear})</span>
               </h2>
-              <p className="text-xs text-stone-500 mt-0.5">Perbandingan pemasukan vs pengeluaran per bulan</p>
+              <p className="text-[11px] sm:text-xs text-stone-500 mt-0.5">Perbandingan pemasukan vs pengeluaran per bulan</p>
             </div>
-            <div className="flex items-center gap-4 text-xs font-semibold">
+            <div className="flex items-center gap-3 sm:gap-4 text-xs font-semibold">
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-emerald-500"></div>
-                <span className="text-stone-700">Masuk</span>
+                <div className="w-2.5 h-2.5 rounded bg-emerald-500"></div>
+                <span className="text-stone-700 text-xs">Masuk</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-rose-500"></div>
-                <span className="text-stone-700">Keluar</span>
+                <div className="w-2.5 h-2.5 rounded bg-rose-500"></div>
+                <span className="text-stone-700 text-xs">Keluar</span>
               </div>
             </div>
           </div>
 
           {/* Bar Chart Visualization */}
-          <div className="h-64 flex items-end gap-2 sm:gap-3 pt-6 border-b border-stone-100">
-            {chartData.map((item: any, idx: number) => {
-              const maxVal = Math.max(
-                ...chartData.map((c: any) => Math.max(c.pemasukan, c.pengeluaran)),
-                1000000
-              );
-              const masukHeight = Math.max(4, Math.round((item.pemasukan / maxVal) * 190));
-              const keluarHeight = Math.max(4, Math.round((item.pengeluaran / maxVal) * 190));
+          <div className="overflow-x-auto pb-1 scrollbar-none">
+            <div className="min-w-[340px] sm:min-w-0 h-56 sm:h-64 flex items-end gap-1.5 sm:gap-3 pt-6 border-b border-stone-100">
+              {chartData.map((item: any, idx: number) => {
+                const maxVal = Math.max(
+                  ...chartData.map((c: any) => Math.max(c.pemasukan, c.pengeluaran)),
+                  1000000
+                );
+                const masukHeight = Math.max(4, Math.round((item.pemasukan / maxVal) * 190));
+                const keluarHeight = Math.max(4, Math.round((item.pengeluaran / maxVal) * 190));
 
-              return (
-                <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group relative">
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col bg-stone-900 text-[11px] text-white p-2.5 rounded-xl shadow-xl z-20 whitespace-nowrap pointer-events-none">
-                    <span className="font-bold border-b border-stone-800 pb-1 mb-1">{item.month} {currentYear}</span>
-                    <span className="text-emerald-400">Masuk: {formatRupiah(item.pemasukan)}</span>
-                    <span className="text-rose-400">Keluar: {formatRupiah(item.pengeluaran)}</span>
-                    <span className="text-orange-300 font-semibold">Saldo: {formatRupiah(item.saldo)}</span>
-                  </div>
+                return (
+                  <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group relative">
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col bg-stone-900 text-[11px] text-white p-2.5 rounded-xl shadow-xl z-20 whitespace-nowrap pointer-events-none">
+                      <span className="font-bold border-b border-stone-800 pb-1 mb-1">{item.month} {currentYear}</span>
+                      <span className="text-emerald-400">Masuk: {formatRupiah(item.pemasukan)}</span>
+                      <span className="text-rose-400">Keluar: {formatRupiah(item.pengeluaran)}</span>
+                      <span className="text-orange-300 font-semibold">Saldo: {formatRupiah(item.saldo)}</span>
+                    </div>
 
-                  <div className="w-full flex items-end justify-center gap-1">
-                    <div
-                      className="w-1/2 bg-emerald-500 hover:bg-emerald-600 rounded-t-sm transition-all"
-                      style={{ height: `${masukHeight}px` }}
-                    ></div>
-                    <div
-                      className="w-1/2 bg-rose-500 hover:bg-rose-600 rounded-t-sm transition-all"
-                      style={{ height: `${keluarHeight}px` }}
-                    ></div>
+                    <div className="w-full flex items-end justify-center gap-0.5 sm:gap-1">
+                      <div
+                        className="w-1/2 bg-emerald-500 hover:bg-emerald-600 rounded-t-sm transition-all"
+                        style={{ height: `${masukHeight}px` }}
+                      ></div>
+                      <div
+                        className="w-1/2 bg-rose-500 hover:bg-rose-600 rounded-t-sm transition-all"
+                        style={{ height: `${keluarHeight}px` }}
+                      ></div>
+                    </div>
+                    <span className="text-[10px] text-stone-500 font-semibold mt-1.5">{item.month}</span>
                   </div>
-                  <span className="text-[10px] text-stone-500 font-semibold mt-1.5">{item.month}</span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex items-center justify-between text-xs text-stone-500 pt-1">

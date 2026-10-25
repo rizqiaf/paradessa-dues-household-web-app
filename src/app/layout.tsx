@@ -35,7 +35,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#fbfbfa] text-stone-900 antialiased font-sans">
         <RoleProvider>
           <Navbar />
-          <main className="flex-1 pb-20 md:pb-8">{children}</main>
+          <main className="flex-1 pb-28 sm:pb-24 lg:pb-10">{children}</main>
         </RoleProvider>
       </body>
     </html>

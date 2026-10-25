@@ -95,12 +95,12 @@ export default function RekapIuranPage() {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="max-w-[1400px] mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-stone-950 flex items-center gap-2">
-            <CalendarCheck className="w-7 h-7 text-orange-600" />
+          <h1 className="text-xl sm:text-3xl font-black text-stone-950 flex items-center gap-2">
+            <CalendarCheck className="w-6 h-6 sm:w-7 sm:h-7 text-orange-600 shrink-0" />
             <span>Rekap Iuran Tahunan Paradessa</span>
           </h1>
           <p className="text-xs sm:text-sm text-stone-500 mt-1">
@@ -109,8 +109,8 @@ export default function RekapIuranPage() {
         </div>
 
         {/* Year Selector & Export */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-white border border-stone-200/90 p-1.5 rounded-2xl shadow-xs">
+        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
+          <div className="flex items-center bg-white border border-stone-200/90 p-1 sm:p-1.5 rounded-2xl shadow-xs">
             <button
               type="button"
               onClick={() => setSelectedYear((y) => y - 1)}
@@ -118,7 +118,7 @@ export default function RekapIuranPage() {
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <span className="font-black text-stone-900 px-3 text-sm">
+            <span className="font-black text-stone-900 px-2.5 sm:px-3 text-xs sm:text-sm">
               Tahun {selectedYear}
             </span>
             <button
@@ -133,16 +133,16 @@ export default function RekapIuranPage() {
           <button
             type="button"
             onClick={handleExportExcel}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white hover:bg-stone-50 border border-stone-200 text-xs font-bold text-stone-700 shadow-xs transition-colors"
+            className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 rounded-2xl bg-white hover:bg-stone-50 border border-stone-200 text-xs font-bold text-stone-700 shadow-xs transition-colors"
           >
-            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>Export Excel</span>
           </button>
         </div>
       </div>
 
       {/* Legend & Filter Controls */}
-      <div className="bg-white border border-stone-200/80 rounded-2xl p-4 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-stone-200/80 rounded-2xl p-3.5 sm:p-4 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         {/* Status Legend */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs font-semibold">
           <div className="flex items-center gap-1.5">
@@ -168,15 +168,15 @@ export default function RekapIuranPage() {
         </div>
 
         {/* Filter inputs */}
-        <div className="flex items-center gap-2">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+          <div className="relative flex-1">
             <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
             <input
               type="text"
               placeholder="Cari blok/warga..."
               value={searchHouse}
               onChange={(e) => setSearchHouse(e.target.value)}
-              className="pl-9 pr-3 py-1.5 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:border-orange-500 focus:bg-white"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:border-orange-500 focus:bg-white"
             />
           </div>
 

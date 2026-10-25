@@ -119,11 +119,11 @@ export default function LaporanBulananPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Control Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         {/* Month & Year Navigation */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between sm:justify-start gap-2">
           <button
             type="button"
             onClick={handlePrevMonth}
@@ -132,7 +132,7 @@ export default function LaporanBulananPage() {
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2 px-2">
-            <span className="text-xl font-black text-stone-900">
+            <span className="text-lg sm:text-xl font-black text-stone-900">
               {BULAN_INDONESIA[selectedMonth]} {selectedYear}
             </span>
           </div>
@@ -146,32 +146,32 @@ export default function LaporanBulananPage() {
         </div>
 
         {/* Action Buttons: PDF, WhatsApp, Publish/Lock */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2">
           <button
             type="button"
             onClick={handleShareWhatsApp}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors"
           >
             <Send className="w-4 h-4" />
-            <span>Bagikan ke WhatsApp</span>
+            <span className="truncate">Kirim WA</span>
           </button>
 
           <button
             type="button"
             onClick={handleCopySummary}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 font-bold text-xs shadow-xs transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 font-bold text-xs shadow-xs transition-colors"
           >
             <Copy className="w-4 h-4 text-stone-500" />
-            <span>{copySuccess ? 'Tersalin!' : 'Salin Teks'}</span>
+            <span className="truncate">{copySuccess ? 'Tersalin!' : 'Salin Teks'}</span>
           </button>
 
           <button
             type="button"
             onClick={handleExportPdf}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-sm shadow-orange-500/25 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-xs shadow-orange-500/25 transition-colors"
           >
             <Download className="w-4 h-4" />
-            <span>Unduh PDF</span>
+            <span className="truncate">Unduh PDF</span>
           </button>
 
           {/* Admin Publish / Lock button */}
@@ -181,20 +181,20 @@ export default function LaporanBulananPage() {
                 type="button"
                 onClick={() => handleToggleLock('unlock')}
                 disabled={actionLoading}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-bold text-xs transition-colors"
+                className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-bold text-xs transition-colors"
               >
                 <Unlock className="w-4 h-4 text-amber-700" />
-                <span>Buka Kunci</span>
+                <span className="truncate">Buka Kunci</span>
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => handleToggleLock('publish')}
                 disabled={actionLoading}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs shadow-sm transition-colors"
+                className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs shadow-xs transition-colors"
               >
                 <Lock className="w-4 h-4" />
-                <span>Publikasikan & Kunci</span>
+                <span className="truncate">Publikasikan</span>
               </button>
             )
           )}
@@ -205,7 +205,7 @@ export default function LaporanBulananPage() {
         <div className="py-24 text-center text-stone-400">Memuat laporan bulanan...</div>
       ) : reportData ? (
         /* The Official Report Paper (A4 / Document Style) */
-        <div className="bg-white text-stone-900 rounded-3xl p-6 sm:p-10 shadow-[0_4px_20px_rgba(0,0,0,0.06)] space-y-6 font-sans border border-stone-200/90">
+        <div className="bg-white text-stone-900 rounded-2xl sm:rounded-3xl p-3.5 sm:p-10 shadow-[0_4px_20px_rgba(0,0,0,0.06)] space-y-4 sm:space-y-6 font-sans border border-stone-200/90">
           {/* Header */}
           <div className="text-center space-y-2 border-b-2 border-stone-100 pb-5">
             <div className="flex justify-center mb-1">

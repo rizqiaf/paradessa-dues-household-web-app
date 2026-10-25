@@ -213,18 +213,18 @@ export default function PenggunaPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-xs font-semibold mb-2">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-[11px] font-semibold mb-1.5">
             <Users className="w-3.5 h-3.5" />
             <span>Hak Akses & Pengguna</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
             Manajemen Akun Pengguna
           </h1>
-          <p className="text-sm text-stone-500 mt-1">
+          <p className="text-xs sm:text-sm text-stone-500 mt-1">
             Kelola akun Bendahara dan Warga untuk memastikan aplikasi hanya diakses oleh penghuni sah Paradessa Habitat.
           </p>
         </div>
@@ -232,7 +232,7 @@ export default function PenggunaPage() {
         <button
           type="button"
           onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm shadow-sm shadow-orange-600/20 transition-all self-start sm:self-auto cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs sm:text-sm shadow-sm shadow-orange-600/20 transition-all w-full sm:w-auto cursor-pointer"
         >
           <UserPlus className="w-4 h-4" />
           <span>Tambah Pengguna Baru</span>

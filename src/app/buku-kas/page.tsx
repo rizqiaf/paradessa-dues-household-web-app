@@ -119,12 +119,12 @@ export default function BukuKasPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Top Header & View Mode Switcher */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-stone-950 flex items-center gap-2">
-            <BookOpen className="w-7 h-7 text-orange-600" />
+          <h1 className="text-xl sm:text-3xl font-black text-stone-950 flex items-center gap-2">
+            <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 text-orange-600 shrink-0" />
             <span>Buku Kas Kontinyu Paradessa</span>
           </h1>
           <p className="text-xs sm:text-sm text-stone-500 mt-1">
@@ -133,33 +133,33 @@ export default function BukuKasPage() {
         </div>
 
         {/* View Switcher: Bulan / Tahun / Multi-Tahun */}
-        <div className="flex items-center gap-1.5 self-start md:self-auto bg-stone-100 p-1.5 rounded-2xl border border-stone-200 shadow-inner">
+        <div className="flex items-center gap-1 sm:gap-1.5 w-full sm:w-auto overflow-x-auto p-1 sm:p-1.5 bg-stone-100 rounded-xl sm:rounded-2xl border border-stone-200 scrollbar-none">
           <button
             type="button"
             onClick={() => setViewMode('month')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg sm:rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
               viewMode === 'month'
                 ? 'bg-white text-orange-600 shadow-sm border border-stone-200/60'
                 : 'text-stone-600 hover:text-stone-900'
             }`}
           >
-            Tampilan Bulanan
+            Bulanan
           </button>
           <button
             type="button"
             onClick={() => setViewMode('year')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg sm:rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
               viewMode === 'year'
                 ? 'bg-white text-orange-600 shadow-sm border border-stone-200/60'
                 : 'text-stone-600 hover:text-stone-900'
             }`}
           >
-            Ringkasan 1 Tahun
+            1 Tahun
           </button>
           <button
             type="button"
             onClick={() => setViewMode('multi-year')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg sm:rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
               viewMode === 'multi-year'
                 ? 'bg-white text-orange-600 shadow-sm border border-stone-200/60'
                 : 'text-stone-600 hover:text-stone-900'

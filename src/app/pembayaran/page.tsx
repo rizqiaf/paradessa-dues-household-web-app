@@ -158,11 +158,11 @@ export default function CatatPembayaranPage() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-stone-950 flex items-center gap-2">
-          <CreditCard className="w-7 h-7 text-orange-600" />
+        <h1 className="text-xl sm:text-3xl font-black text-stone-950 flex items-center gap-2">
+          <CreditCard className="w-6 h-6 sm:w-7 sm:h-7 text-orange-600 shrink-0" />
           <span>Catat Pembayaran Iuran</span>
         </h1>
         <p className="text-xs sm:text-sm text-stone-500 mt-1">
@@ -184,8 +184,8 @@ export default function CatatPembayaranPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white border border-stone-200/80 rounded-3xl p-6 sm:p-8 shadow-[0_1px_4px_rgba(0,0,0,0.03)] space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <div className="bg-white border border-stone-200/80 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-[0_1px_4px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5">
           {/* House Picker (Searchable) */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">
