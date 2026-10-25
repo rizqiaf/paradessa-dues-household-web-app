@@ -207,7 +207,14 @@ export default function LaporanBulananPage() {
         /* The Official Report Paper (A4 / Document Style) */
         <div className="bg-white text-stone-900 rounded-3xl p-6 sm:p-10 shadow-[0_4px_20px_rgba(0,0,0,0.06)] space-y-6 font-sans border border-stone-200/90">
           {/* Header */}
-          <div className="text-center space-y-1.5 border-b-2 border-stone-100 pb-5">
+          <div className="text-center space-y-2 border-b-2 border-stone-100 pb-5">
+            <div className="flex justify-center mb-1">
+              <img
+                src="/images/paradessa-logo.png"
+                alt="Paradessa Habitat"
+                className="h-9 sm:h-11 w-auto object-contain"
+              />
+            </div>
             <p className="text-xs text-stone-500 font-medium max-w-xl mx-auto leading-relaxed">
               {reportData.addressHeader}
             </p>

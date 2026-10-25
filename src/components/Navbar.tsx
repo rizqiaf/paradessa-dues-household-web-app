@@ -86,8 +86,12 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 gap-3">
             {/* Brand Logo & Cluster Name */}
             <Link href="/" className="flex items-center gap-3 shrink-0 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/25 group-hover:scale-105 transition-transform">
-                <Building className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-white border border-stone-200/90 p-1.5 flex items-center justify-center shadow-xs group-hover:border-orange-400 group-hover:shadow-sm transition-all">
+                <img
+                  src="/images/paradessa-emblem.png"
+                  alt="Paradessa Habitat"
+                  className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-stone-950 text-base tracking-tight leading-snug group-hover:text-orange-600 transition-colors">

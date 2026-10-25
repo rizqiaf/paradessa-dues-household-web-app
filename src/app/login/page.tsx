@@ -3,15 +3,12 @@
 import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  Building2,
   Lock,
   User,
   Eye,
   EyeOff,
   AlertCircle,
   ArrowRight,
-  ShieldCheck,
-  Home,
 } from 'lucide-react';
 import { useRole } from '@/context/RoleContext';
 
@@ -45,12 +42,6 @@ function LoginForm() {
       setError(res.error || 'Login gagal.');
       setLoading(false);
     }
-  };
-
-  const handleFillDemo = (userVal: string, passVal: string) => {
-    setUsername(userVal);
-    setPassword(passVal);
-    setError('');
   };
 
   return (
@@ -133,38 +124,6 @@ function LoginForm() {
           )}
         </button>
       </form>
-
-      {/* Quick Demo Credentials */}
-      <div className="pt-4 border-t border-stone-100 space-y-2.5">
-        <span className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider block">
-          Pilihan Akun Cepat (Testing):
-        </span>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => handleFillDemo('bendahara', 'paradessa2026')}
-            className="p-2.5 rounded-xl bg-stone-50 hover:bg-orange-50/60 border border-stone-200 hover:border-orange-300 text-left transition-colors cursor-pointer"
-          >
-            <div className="flex items-center gap-1.5 text-stone-900 font-bold text-xs">
-              <ShieldCheck className="w-3.5 h-3.5 text-orange-600" />
-              <span>Bendahara</span>
-            </div>
-            <span className="text-[10px] text-stone-500 block mt-0.5">Admin (Full Akses)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleFillDemo('warga', 'warga2026')}
-            className="p-2.5 rounded-xl bg-stone-50 hover:bg-orange-50/60 border border-stone-200 hover:border-orange-300 text-left transition-colors cursor-pointer"
-          >
-            <div className="flex items-center gap-1.5 text-stone-900 font-bold text-xs">
-              <Home className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Warga (A1)</span>
-            </div>
-            <span className="text-[10px] text-stone-500 block mt-0.5">Warga (Read-Only)</span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -174,16 +133,22 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-[#fbfbfa]">
       <div className="max-w-md w-full space-y-6">
         {/* Logo & Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-orange-600 text-white shadow-md shadow-orange-600/20 mb-2">
-            <Building2 className="w-7 h-7" />
+        <div className="text-center space-y-3">
+          <div className="flex justify-center mb-1">
+            <img
+              src="/images/paradessa-logo.png"
+              alt="Paradessa Habitat"
+              className="h-10 sm:h-12 w-auto object-contain"
+            />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
-            Paradessa Household Dues
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-500 max-w-sm mx-auto">
-            Sistem Pengelolaan Iuran Bulanan & Buku Kas Warga Paradessa Habitat
-          </p>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
+              Paradessa Household Dues
+            </h1>
+            <p className="text-xs sm:text-sm text-stone-500 max-w-sm mx-auto mt-1">
+              Sistem Pengelolaan Iuran Bulanan & Buku Kas Warga
+            </p>
+          </div>
         </div>
 
         {/* Card Form inside Suspense boundary */}
@@ -203,3 +168,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

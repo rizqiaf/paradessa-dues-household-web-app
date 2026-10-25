@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import { formatRupiah, formatNumber } from './format';
 import { MonthlyReportData } from './monthly-report';
 import { MonthLedgerSummary } from './types';
+import { PARADESSA_LOGO_DATA_URL } from './logo-data';
 
 // Export official monthly report to PDF
 export function exportMonthlyReportToPdf(report: MonthlyReportData) {
@@ -14,23 +15,30 @@ export function exportMonthlyReportToPdf(report: MonthlyReportData) {
 
   const pageWidth = doc.internal.pageSize.getWidth();
 
+  // Official Logo
+  try {
+    doc.addImage(PARADESSA_LOGO_DATA_URL, 'PNG', (pageWidth - 52) / 2, 7, 52, 7);
+  } catch {
+    // fallback if image rendering fails
+  }
+
   // Header: Cluster address
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
-  doc.text(report.addressHeader, pageWidth / 2, 12, { align: 'center', maxWidth: 180 });
+  doc.text(report.addressHeader, pageWidth / 2, 18, { align: 'center', maxWidth: 180 });
 
   // Title: LAPORAN KEUANGAN
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
+  doc.setFontSize(13);
   doc.setTextColor(20, 20, 20);
-  doc.text(report.title, pageWidth / 2, 22, { align: 'center' });
+  doc.text(report.title, pageWidth / 2, 26, { align: 'center' });
 
   // Periode
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(60, 60, 60);
-  doc.text(`Periode : ${report.periodText}`, 14, 29);
+  doc.text(`Periode : ${report.periodText}`, 14, 33);
 
   // Table Body Rows
   const tableRows: any[] = [];
@@ -97,7 +105,7 @@ export function exportMonthlyReportToPdf(report: MonthlyReportData) {
   ]);
 
   autoTable(doc, {
-    startY: 33,
+    startY: 38,
     head: [['NO', 'BULAN', 'JENIS TRANSAKSI', 'KETERANGAN', 'MASUK', 'KELUAR', 'SALDO']],
     body: tableRows,
     theme: 'grid',
@@ -175,29 +183,33 @@ export function exportStatementToPdf(stmt: any) {
   });
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text(stmt.clusterName, pageWidth / 2, 15, { align: 'center' });
+  // Official Logo
+  try {
+    doc.addImage(PARADESSA_LOGO_DATA_URL, 'PNG', (pageWidth - 48) / 2, 7, 48, 6.5);
+  } catch {
+    // fallback
+  }
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
-  doc.text(stmt.clusterAddress, pageWidth / 2, 20, { align: 'center', maxWidth: 170 });
+  doc.text(stmt.clusterAddress, pageWidth / 2, 18, { align: 'center', maxWidth: 170 });
 
-  doc.setLineWidth(0.5);
-  doc.line(14, 25, pageWidth - 14, 25);
+  doc.setLineWidth(0.4);
+  doc.setDrawColor(200, 200, 200);
+  doc.line(14, 23, pageWidth - 14, 23);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(20, 20, 20);
-  doc.text(stmt.title, pageWidth / 2, 33, { align: 'center' });
+  doc.text(stmt.title, pageWidth / 2, 31, { align: 'center' });
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.text(`Nomor : ${stmt.statementNumber}`, 14, 42);
-  doc.text(`Tanggal : ${stmt.date}`, pageWidth - 14, 42, { align: 'right' });
-  doc.text(`Nama Warga : ${stmt.recipientName}`, 14, 48);
-  doc.text(`Nomor Rumah : Blok ${stmt.houseCode}`, 14, 54);
+  doc.text(`Nomor : ${stmt.statementNumber}`, 14, 40);
+  doc.text(`Tanggal : ${stmt.date}`, pageWidth - 14, 40, { align: 'right' });
+  doc.text(`Nama Warga : ${stmt.recipientName}`, 14, 46);
+  doc.text(`Nomor Rumah : Blok ${stmt.houseCode}`, 14, 52);
 
   const tableRows = stmt.unpaidItems.map((item: any, idx: number) => [
     idx + 1,
@@ -209,7 +221,7 @@ export function exportStatementToPdf(stmt: any) {
   ]);
 
   autoTable(doc, {
-    startY: 60,
+    startY: 58,
     head: [['No', 'Periode', 'Komponen', 'Tagihan', 'Sudah Dibayar', 'Sisa Tagihan']],
     body: tableRows,
     theme: 'grid',

@@ -109,3 +109,4 @@ export function seedDefaultUsers(db = getDb()): void {
     VALUES (?, ?, ?, 'warga', 'A1', ?, '08129876543', 'eko.a1@paradessa.id', 1, ?, ?)
   `).run(wargaId, 'warga', 'Eko (Warga Blok A1)', wargaPassHash, now, now);
 }
+
