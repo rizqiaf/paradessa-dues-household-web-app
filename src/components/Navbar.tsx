@@ -21,12 +21,16 @@ import {
   ChevronDown,
   Sparkles,
   Plus,
+  Users,
+  LogOut,
+  User,
+  ShieldCheck,
 } from 'lucide-react';
 import { useRole } from '@/context/RoleContext';
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { role, setRole, selectedHouseCode, setSelectedHouseCode, isAdmin } = useRole();
+  const { user, role, setRole, selectedHouseCode, setSelectedHouseCode, isAdmin, logout } = useRole();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -53,6 +57,7 @@ export default function Navbar() {
 
   // Secondary items placed inside clean dropdown to prevent header wrapping
   const secondaryNavItems = [
+    { label: 'Kelola Pengguna', href: '/pengguna', icon: Users, desc: 'Manajemen akun bendahara & warga' },
     { label: 'Rekap Sampah', href: '/rekap-sampah', icon: Trash2, desc: 'Iuran & bayar ke Pak Udin' },
     { label: 'Talangan / Kasbon', href: '/talangan', icon: Coins, desc: 'Kompensasi dana warga' },
     { label: 'Alat Impor Excel', href: '/import', icon: Upload, desc: 'Impor & rekonsiliasi master sheet' },
@@ -67,6 +72,11 @@ export default function Navbar() {
   ];
 
   const isSecondaryActive = secondaryNavItems.some((item) => pathname === item.href);
+
+  // If on login page, render minimal header
+  if (pathname === '/login') {
+    return null;
+  }
 
   return (
     <>
@@ -119,7 +129,7 @@ export default function Navbar() {
                     <button
                       type="button"
                       onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                         isSecondaryActive || dropdownOpen
                           ? 'bg-orange-50 text-orange-600 font-bold'
                           : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
@@ -182,21 +192,21 @@ export default function Navbar() {
               )}
             </nav>
 
-            {/* Right Controls: Role Switcher & Action Button */}
+            {/* Right Controls: User Pill & Quick Action Buttons */}
             <div className="flex items-center gap-2">
               {/* Quick Transaction Action for Bendahara on Desktop */}
               {isAdmin && (
                 <div className="hidden sm:flex items-center gap-1.5 mr-1">
                   <Link
                     href="/pembayaran"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-sm shadow-orange-500/25 transition-all"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-sm shadow-orange-600/20 transition-all cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Catat Bayar</span>
                   </Link>
                   <Link
                     href="/pengeluaran"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs border border-stone-200 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs border border-stone-200 transition-colors cursor-pointer"
                   >
                     <Receipt className="w-3.5 h-3.5 text-stone-500" />
                     <span>Pengeluaran</span>
@@ -204,61 +214,48 @@ export default function Navbar() {
                 </div>
               )}
 
-              {/* Role Switcher Pill */}
-              <div className="flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200/80 shadow-inner">
-                <button
-                  type="button"
-                  onClick={() => setRole('admin')}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
-                    role === 'admin'
-                      ? 'bg-white text-orange-600 shadow-sm border border-stone-200/60'
-                      : 'text-stone-500 hover:text-stone-800'
-                  }`}
-                >
-                  Bendahara
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('warga')}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
-                    role === 'warga'
-                      ? 'bg-white text-orange-600 shadow-sm border border-stone-200/60'
-                      : 'text-stone-500 hover:text-stone-800'
-                  }`}
-                >
-                  Warga
-                </button>
-              </div>
+              {/* User Account Info & Logout */}
+              {user ? (
+                <div className="flex items-center gap-1.5 bg-stone-100 pl-2.5 pr-1 py-1 rounded-xl border border-stone-200/80">
+                  <div className="flex items-center gap-1.5 text-xs">
+                    {user.role === 'admin' ? (
+                      <ShieldCheck className="w-3.5 h-3.5 text-orange-600" />
+                    ) : (
+                      <Home className="w-3.5 h-3.5 text-emerald-600" />
+                    )}
+                    <span className="font-extrabold text-stone-900 max-w-[100px] truncate">
+                      {user.username}
+                    </span>
+                    {user.house_code && (
+                      <span className="text-[10px] bg-white px-1.5 py-0.5 rounded border border-stone-200 font-bold text-stone-700">
+                        {user.house_code}
+                      </span>
+                    )}
+                  </div>
 
-              {/* Warga House selector if active */}
-              {role === 'warga' && (
-                <div className="hidden md:flex items-center text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-xl gap-1.5">
-                  <UserCheck className="w-3.5 h-3.5 text-orange-600" />
-                  <select
-                    value={selectedHouseCode}
-                    onChange={(e) => setSelectedHouseCode(e.target.value)}
-                    className="bg-transparent font-bold focus:outline-none cursor-pointer text-orange-900"
+                  <button
+                    type="button"
+                    onClick={logout}
+                    title="Keluar (Logout)"
+                    className="p-1 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-white transition-colors cursor-pointer ml-1"
                   >
-                    <option value="A1">Blok A1</option>
-                    <option value="A3">Blok A3</option>
-                    <option value="A7">Blok A7</option>
-                    <option value="A11">Blok A11</option>
-                    <option value="A12">Blok A12</option>
-                    <option value="A15">Blok A15</option>
-                    <option value="A18">Blok A18</option>
-                    <option value="A21">Blok A21</option>
-                    <option value="B38">Blok B38</option>
-                    <option value="B50">Blok B50</option>
-                    <option value="C01">Blok C01</option>
-                  </select>
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
                 </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="px-3 py-1.5 rounded-xl bg-orange-600 text-white font-bold text-xs hover:bg-orange-700 transition-colors"
+                >
+                  Masuk
+                </Link>
               )}
 
               {/* Mobile hamburger menu button */}
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 rounded-xl bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-200"
+                className="lg:hidden p-2 rounded-xl bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-200 cursor-pointer"
                 aria-label="Toggle menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -269,28 +266,29 @@ export default function Navbar() {
 
         {/* Mobile Full Drawer Dropdown */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-white/98 backdrop-blur-xl border-b border-stone-200 px-4 pt-3 pb-6 space-y-4 shadow-xl max-h-[85vh] overflow-y-auto">
-            {/* Warga house selector on mobile */}
-            {role === 'warga' && (
-              <div className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-xl text-xs">
-                <span className="font-bold text-orange-900">Pilih Rumah Warga:</span>
-                <select
-                  value={selectedHouseCode}
-                  onChange={(e) => setSelectedHouseCode(e.target.value)}
-                  className="bg-white text-stone-900 font-bold border border-orange-300 rounded-lg px-2.5 py-1"
+          <div className="lg:hidden bg-white/98 backdrop-blur-xl border-b border-stone-200 px-4 pt-3 pb-6 space-y-4 shadow-xl max-h-[85vh] overflow-y-auto animate-fade-in">
+            {/* User Profile on Mobile */}
+            {user && (
+              <div className="flex items-center justify-between p-3 bg-stone-50 border border-stone-200 rounded-2xl text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-black">
+                    {user.name.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="font-extrabold text-stone-900">{user.name}</div>
+                    <div className="text-[11px] text-stone-500">
+                      @{user.username} {user.house_code ? `• Blok ${user.house_code}` : '• Pengurus'}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-bold"
                 >
-                  <option value="A1">Blok A1 (Pak Eko)</option>
-                  <option value="A3">Blok A3 (Pak Robi)</option>
-                  <option value="A7">Blok A7 (Pak Eka)</option>
-                  <option value="A11">Blok A11 (Pak Hafizh)</option>
-                  <option value="A12">Blok A12 (Pak Aqmal)</option>
-                  <option value="A15">Blok A15 (Pak Fajar)</option>
-                  <option value="A18">Blok A18 (Pak Rizqi)</option>
-                  <option value="A21">Blok A21 (Pak Sunandar)</option>
-                  <option value="B38">Blok B38 (Pak Gianaj)</option>
-                  <option value="B50">Blok B50 (Pak Agung)</option>
-                  <option value="C01">Blok C01 (Pak Rahman)</option>
-                </select>
+                  <LogOut className="w-3 h-3" />
+                  <span>Keluar</span>
+                </button>
               </div>
             )}
 
@@ -300,7 +298,7 @@ export default function Navbar() {
                 <Link
                   href="/pembayaran"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-sm shadow-orange-500/20"
+                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-sm shadow-orange-600/20"
                 >
                   <CreditCard className="w-4 h-4" />
                   <span>+ Catat Bayar</span>
@@ -345,7 +343,7 @@ export default function Navbar() {
             {isAdmin && (
               <div className="space-y-1 pt-2 border-t border-stone-100">
                 <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block px-2 mb-1">
-                  Alat Lainnya & Laporan
+                  Alat Lainnya & Pengaturan
                 </span>
                 {secondaryNavItems.map((item) => {
                   const Icon = item.icon;
@@ -402,7 +400,7 @@ export default function Navbar() {
           {isAdmin ? (
             <Link
               href="/pembayaran"
-              className="flex flex-col items-center justify-center -mt-5 w-12 h-12 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/35 border-2 border-white hover:scale-105 active:scale-95 transition-all"
+              className="flex flex-col items-center justify-center -mt-5 w-12 h-12 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 text-white shadow-lg shadow-orange-600/35 border-2 border-white hover:scale-105 active:scale-95 transition-all"
               title="Catat Pembayaran"
             >
               <Plus className="w-6 h-6 stroke-[2.5]" />
@@ -422,7 +420,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-colors ${
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-colors cursor-pointer ${
               mobileMenuOpen ? 'text-orange-600 font-bold' : 'hover:text-stone-900'
             }`}
           >

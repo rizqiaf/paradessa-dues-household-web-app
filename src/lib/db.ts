@@ -240,6 +240,31 @@ export function initSchema(db: Database.Database) {
       description TEXT,
       updated_at TEXT NOT NULL
     );
+
+    -- Users Table
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'warga', -- admin, warga
+      house_code TEXT,
+      password_hash TEXT NOT NULL,
+      phone TEXT,
+      email TEXT,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    -- User Sessions Table
+    CREATE TABLE IF NOT EXISTS sessions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      token TEXT UNIQUE NOT NULL,
+      expires_at TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
   `);
 }
 

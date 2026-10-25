@@ -189,6 +189,27 @@ export interface AuditLog {
   ip_address?: string | null;
 }
 
+export interface UserAccount {
+  id: string;
+  username: string;
+  name: string;
+  role: 'admin' | 'warga';
+  house_code?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserSession {
+  id: string;
+  user_id: string;
+  token: string;
+  expires_at: string;
+  created_at: string;
+}
+
 export interface SystemSetting {
   key: string;
   value: string;
