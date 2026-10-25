@@ -15,7 +15,18 @@ import { useRole } from '@/context/RoleContext';
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const fromUrl = searchParams.get('from') || '/';
+  const rawFrom = searchParams.get('from') || '/';
+  // Sanitize target redirect to avoid redirecting to static assets or api
+  const targetUrl =
+    rawFrom &&
+    !rawFrom.startsWith('/api') &&
+    !rawFrom.startsWith('/images') &&
+    !rawFrom.startsWith('/login') &&
+    !rawFrom.endsWith('.png') &&
+    !rawFrom.endsWith('.ico')
+      ? rawFrom
+      : '/';
+
   const { login } = useRole();
 
   const [username, setUsername] = useState('');
@@ -36,8 +47,8 @@ function LoginForm() {
 
     const res = await login(username.trim(), password);
     if (res.success) {
-      router.push(fromUrl);
-      router.refresh();
+      // Use window.location.href to force clean session re-hydration and middleware pass
+      window.location.href = targetUrl;
     } else {
       setError(res.error || 'Login gagal.');
       setLoading(false);

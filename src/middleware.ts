@@ -10,7 +10,9 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/favicon.ico') ||
     pathname.startsWith('/manifest.json') ||
-    pathname.startsWith('/icons')
+    pathname.startsWith('/icons') ||
+    pathname.startsWith('/images') ||
+    pathname === '/logo.png'
   ) {
     return NextResponse.next();
   }
@@ -28,8 +30,14 @@ export function middleware(request: NextRequest) {
   // If accessing protected routes without session, redirect to login
   if (!sessionToken) {
     const loginUrl = new URL('/login', request.url);
-    // Don't append callbackUrl for root to keep URL clean
-    if (pathname !== '/') {
+    // Don't append callbackUrl for root or static files to keep URL clean
+    if (
+      pathname !== '/' &&
+      !pathname.startsWith('/images') &&
+      !pathname.startsWith('/api') &&
+      !pathname.endsWith('.png') &&
+      !pathname.endsWith('.ico')
+    ) {
       loginUrl.searchParams.set('from', pathname);
     }
     return NextResponse.redirect(loginUrl);

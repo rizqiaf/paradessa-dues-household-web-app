@@ -66,9 +66,11 @@ export async function POST(req: NextRequest) {
       message: 'Login berhasil.',
     });
 
+    const isHttps = req.headers.get('x-forwarded-proto') === 'https';
+
     response.cookies.set('paradessa_session', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isHttps,
       sameSite: 'lax',
       path: '/',
       maxAge: 30 * 24 * 60 * 60, // 30 days

@@ -16,9 +16,11 @@ export async function POST(req: NextRequest) {
       message: 'Berhasil logout.',
     });
 
+    const isHttps = req.headers.get('x-forwarded-proto') === 'https';
+
     response.cookies.set('paradessa_session', '', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isHttps,
       sameSite: 'lax',
       path: '/',
       maxAge: 0,
