@@ -101,24 +101,25 @@ export async function POST(request: Request) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
     `).run(paymentId, paymentNumber, txDate, houseId, house_code, payer_name || `Warga ${house_code}`, amount, method, proof_photo || null, note || null);
 
+    // Get subscriptions for this house
+    const subRows = (await db.prepare(`
+      SELECT s.component_name, f.amount
+      FROM house_subscriptions s
+      JOIN fee_components f ON s.component_id = f.id
+      WHERE s.house_code = ? AND s.is_active = 1
+    `).all(house_code)) as any[];
+
+    const subscriptions = subRows.length > 0 ? subRows : [
+      { component_name: 'Pokok', amount: 50000 },
+      { component_name: 'Air', amount: 20000 },
+      { component_name: 'Sampah', amount: 50000 },
+    ];
+
     let allocationsToSave = custom_allocations;
     let houseCreditAmount = 0;
 
     // 2. If no custom allocations provided, run auto-allocation
     if (!allocationsToSave || allocationsToSave.length === 0) {
-      const subRows = (await db.prepare(`
-        SELECT s.component_name, f.amount
-        FROM house_subscriptions s
-        JOIN fee_components f ON s.component_id = f.id
-        WHERE s.house_code = ? AND s.is_active = 1
-      `).all(house_code)) as any[];
-
-      const subscriptions = subRows.length > 0 ? subRows : [
-        { component_name: 'Pokok', amount: 50000 },
-        { component_name: 'Air', amount: 20000 },
-        { component_name: 'Sampah', amount: 50000 },
-      ];
-
       const duesRows = (await db.prepare(`
         SELECT id, year_month, component_name, amount, paid_amount, (amount - paid_amount) as remaining
         FROM dues
@@ -173,7 +174,9 @@ export async function POST(request: Request) {
       } else {
         // Create due
         const dueId = `DUE-${house_code}-${alloc.year_month}-${alloc.component_name}`;
-        const dueStatus = alloc.amount >= 50000 ? 'lunas' : 'sebagian';
+        const sub = subscriptions.find((s) => s.component_name === alloc.component_name);
+        const standardAmount = sub ? sub.amount : alloc.amount;
+        const dueStatus = alloc.amount >= standardAmount ? 'lunas' : (alloc.amount > 0 ? 'sebagian' : 'belum bayar');
         await db.prepare(`
           INSERT INTO dues (id, house_id, house_code, year_month, component_id, component_name, amount, paid_amount, status, created_at, updated_at)
           VALUES (?, ?, ?, ?, 'GEN', ?, ?, ?, ?, datetime('now'), datetime('now'))
@@ -181,7 +184,7 @@ export async function POST(request: Request) {
             paid_amount = dues.paid_amount + excluded.paid_amount,
             status = CASE WHEN (dues.paid_amount + excluded.paid_amount) >= dues.amount THEN 'lunas' ELSE 'sebagian' END,
             updated_at = datetime('now')
-        `).run(dueId, houseId, house_code, alloc.year_month, alloc.component_name, alloc.amount, alloc.amount, dueStatus);
+        `).run(dueId, houseId, house_code, alloc.year_month, alloc.component_name, standardAmount, alloc.amount, dueStatus);
       }
     }
 

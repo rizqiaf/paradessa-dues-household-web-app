@@ -45,21 +45,27 @@ Halaman utama yang menyajikan ikhtisar keuangan secara *real-time*:
 ### B. Catat Pembayaran Iuran Warga (`/pembayaran`)
 Menu utama bendahara untuk mencatat setoran iuran dari warga (via transfer bank maupun tunai/cash).
 
+**Fitur Pembayaran Bulan Depan (Bayar di Muka / Prepayment):**
+Seringkali ada warga yang sudah mulai membayar iuran untuk bulan depan meskipun masih di periode bulan berjalan (misalnya membayar iuran **November 2026** pada akhir **Oktober 2026**). Sistem menyediakan tombol dan alur khusus untuk skenario ini:
+- Klik tombol cepat **"Bayar Bulan Depan (Nov 2026) — Di Muka"**.
+- Sistem otomatis menetapkan bulan target ke bulan depan, nominal Rp 120.000, serta mengisi keterangan *"Iuran Bulan November 2026 (Bayar di Muka)"*.
+- **Pencatatan Akuntansi Kas:** Uang masuk tetap dicatat pada tanggal uang diterima (masuk ke saldo Buku Kas **Oktober 2026**), namun di matriks status iuran warga, bulan **November 2026** langsung berstatus **Lunas** (*Prepayment*).
+
 **Langkah-langkah Pencatatan:**
 1. Klik tombol oranye **+ Catat Bayar** pada bilah navigasi atas.
 2. **Pilih Nomor Rumah Warga:** Ketik atau pilih blok rumah (contoh: `A18`, `B38`, `A1`).
-3. **Pilihan Pembayaran Untuk Bulan:**
-   - Sistem secara cerdas akan menyarankan bulan yang tertunggak atau bulan berjalan sesuai riwayat terakhir rumah tersebut.
-   - Anda dapat menekan tombol cepat: **Bulan Ini (Okt 2026)**, **Saran/Tertunggak**, atau **Bulan Depan (Nov 2026)**.
-   - Tersedia juga pilihan **Dropdown Bulan** untuk memilih bulan iuran spesifik jika warga membayar untuk periode tertentu.
-4. **Nominal Pembayaran:** Masukkan jumlah uang yang diterima (misal Rp 120.000 untuk paket lengkap Pokok + Air + Sampah). Terdapat tombol cepat **Lunas Bulan Ini** untuk otomatis mengisi nominal tagihan bulan berjalan.
+3. **Pilihan Target Pembayaran:**
+   - **Lunas Bulan Ini:** Membayar tagihan bulan berjalan (misal Oktober 2026).
+   - **Bayar Bulan Depan (Di Muka):** Membayar lebih awal untuk bulan berikutnya (misal November 2026).
+   - **Otomatis / Urut Tunggakan:** Mengalokasikan dana ke tunggakan tertua yang belum lunas.
+   - **Pilih Bulan Spesifik:** Dropdown seluruh bulan dari awal tahun hingga tahun depan.
+4. **Nominal Pembayaran:** Masukkan jumlah uang yang diterima (misal Rp 120.000 untuk paket lengkap Pokok + Air + Sampah).
 5. **Tanggal & Metode:** Tentukan tanggal penerimaan uang serta metode (Transfer Bank atau Tunai/Cash).
 6. **Catatan (Opsional):** Tambahkan berita transfer atau keterangan jika ada.
 7. **Periksa Preview Alokasi:**
-   - Sistem akan menampilkan rincian alokasi secara transparan (komponen Pokok Rp 50.000, Air Rp 20.000, Sampah Rp 50.000).
-   - Jika warga membayar lebih dari 1 bulan, sistem otomatis membagi kelebihan uang ke bulan-bulan berikutnya (*Prepayment*).
-8. Klik **Simpan Pembayaran**.
-9. Sistem akan menyimpan transaksi ke database dan langsung mengarahkan Anda ke Buku Kas untuk memastikan dana masuk tercatat.
+   - Sistem menampilkan rincian alokasi secara transparan (komponen Pokok Rp 50.000, Air Rp 20.000, Sampah Rp 50.000).
+   - Terdapat label status: **Iuran Bulan Berjalan**, **Bayar di Muka (Prepayment)**, atau **Pelunasan Tunggakan**.
+8. Klik **Simpan Pembayaran**. Data mutasi langsung masuk ke Buku Kas dan rekap iuran otomatis terupdate.
 
 ---
 
