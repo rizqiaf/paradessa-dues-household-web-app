@@ -10,7 +10,7 @@ export async function PUT(
   try {
     const db = getDb();
     const token = req.cookies.get('paradessa_session')?.value;
-    const currentUser = token ? getSessionUser(token, db) : null;
+    const currentUser = token ? await getSessionUser(token, db) : null;
 
     if (!currentUser || currentUser.role !== 'admin') {
       return NextResponse.json(
@@ -20,7 +20,7 @@ export async function PUT(
     }
 
     const userId = params.id;
-    const existing = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as any;
+    const existing = (await db.prepare('SELECT * FROM users WHERE id = ?').get(userId)) as any;
     if (!existing) {
       return NextResponse.json(
         { success: false, error: 'Pengguna tidak ditemukan.' },
@@ -41,7 +41,7 @@ export async function PUT(
       newPasswordHash = hashPassword(String(password).trim());
     }
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE users SET
         name = coalesce(?, name),
         role = ?,
@@ -64,7 +64,7 @@ export async function PUT(
       userId
     );
 
-    recordAuditLog(currentUser.name, 'UPDATE', 'user', userId, {
+    await recordAuditLog(currentUser.name, 'UPDATE', 'user', userId, {
       name: existing.name,
       role: existing.role,
       is_active: existing.is_active,
@@ -73,7 +73,7 @@ export async function PUT(
       role: userRole,
       is_active: activeStatus,
       password_reset: Boolean(password),
-    });
+    }, db);
 
     return NextResponse.json({
       success: true,
@@ -94,7 +94,7 @@ export async function DELETE(
   try {
     const db = getDb();
     const token = req.cookies.get('paradessa_session')?.value;
-    const currentUser = token ? getSessionUser(token, db) : null;
+    const currentUser = token ? await getSessionUser(token, db) : null;
 
     if (!currentUser || currentUser.role !== 'admin') {
       return NextResponse.json(
@@ -111,7 +111,7 @@ export async function DELETE(
       );
     }
 
-    const existing = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as any;
+    const existing = (await db.prepare('SELECT * FROM users WHERE id = ?').get(userId)) as any;
     if (!existing) {
       return NextResponse.json(
         { success: false, error: 'Pengguna tidak ditemukan.' },
@@ -120,13 +120,13 @@ export async function DELETE(
     }
 
     // Delete sessions and user
-    db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
-    db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+    await db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
+    await db.prepare('DELETE FROM users WHERE id = ?').run(userId);
 
-    recordAuditLog(currentUser.name, 'DELETE', 'user', userId, {
+    await recordAuditLog(currentUser.name, 'DELETE', 'user', userId, {
       username: existing.username,
       name: existing.name,
-    }, null);
+    }, null, db);
 
     return NextResponse.json({
       success: true,
@@ -139,4 +139,3 @@ export async function DELETE(
     );
   }
 }
-

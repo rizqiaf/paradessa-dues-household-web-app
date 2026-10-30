@@ -95,3 +95,9 @@ Menjalankan 8 pengujian unit untuk:
 npm run build
 npm start
 ```
+
+### 4. Database Setup (Turso & Vercel)
+Untuk deployment cloud di Vercel:
+Tambahkan Environment Variables di **Vercel Project Settings > Environment Variables**:
+- `TURSO_DATABASE_URL`: URL database Turso (contoh: `libsql://paradessa-db-rizqi537.aws-ap-southeast-1.turso.io`)
+- `TURSO_AUTH_TOKEN`: Token autentikasi database Turso

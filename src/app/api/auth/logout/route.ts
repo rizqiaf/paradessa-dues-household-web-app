@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const token = req.cookies.get('paradessa_session')?.value;
 
     if (token) {
-      destroySession(token, db);
+      await destroySession(token, db);
     }
 
     const response = NextResponse.json({
@@ -34,4 +34,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

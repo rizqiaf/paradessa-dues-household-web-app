@@ -1,4 +1,4 @@
-import { getDb } from './db';
+import { getDb, DatabaseClient } from './db';
 import { BULAN_INDONESIA, BULAN_INDONESIA_SHORT } from './format';
 import { LedgerItem, MonthLedgerSummary, MonthLockStatus } from './types';
 
@@ -10,9 +10,9 @@ export interface LedgerFilterOptions {
 }
 
 // Get system opening balance (from settings, defaults to 0)
-export function getInitialOpeningBalance(db = getDb()): { balance: number; effectiveDate: string } {
-  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('opening_balance') as { value: string } | undefined;
-  const dateRow = db.prepare('SELECT value FROM settings WHERE key = ?').get('opening_balance_date') as { value: string } | undefined;
+export async function getInitialOpeningBalance(db: DatabaseClient = getDb()): Promise<{ balance: number; effectiveDate: string }> {
+  const row = (await db.prepare('SELECT value FROM settings WHERE key = ?').get('opening_balance')) as { value: string } | undefined;
+  const dateRow = (await db.prepare('SELECT value FROM settings WHERE key = ?').get('opening_balance_date')) as { value: string } | undefined;
   return {
     balance: row ? parseInt(row.value, 10) || 0 : 0,
     effectiveDate: dateRow ? dateRow.value : '2025-06-01',
@@ -20,7 +20,7 @@ export function getInitialOpeningBalance(db = getDb()): { balance: number; effec
 }
 
 // Fetch all chronological ledger items up to a specific end date (or all)
-export function getAllLedgerRawItems(db = getDb(), upToDate?: string): Array<{
+export async function getAllLedgerRawItems(db: DatabaseClient = getDb(), upToDate?: string): Promise<Array<{
   id: string;
   date: string;
   type: 'masuk' | 'keluar';
@@ -33,11 +33,7 @@ export function getAllLedgerRawItems(db = getDb(), upToDate?: string): Array<{
   source_id: string;
   note: string | null;
   created_at: string;
-}> {
-  // 1. Payments (Masuk)
-  // 2. Other Income (Masuk)
-  // 3. Expenses (Keluar)
-  // 4. Advance settlements paid via Cash (Keluar)
+}>> {
   const items: Array<{
     id: string;
     date: string;
@@ -55,11 +51,10 @@ export function getAllLedgerRawItems(db = getDb(), upToDate?: string): Array<{
 
   // Payments
   const paymentsQuery = upToDate
-    ? db.prepare('SELECT * FROM payments WHERE date <= ? ORDER BY date ASC, created_at ASC').all(upToDate)
-    : db.prepare('SELECT * FROM payments ORDER BY date ASC, created_at ASC').all();
+    ? await db.prepare('SELECT * FROM payments WHERE date <= ? ORDER BY date ASC, created_at ASC').all(upToDate)
+    : await db.prepare('SELECT * FROM payments ORDER BY date ASC, created_at ASC').all();
 
   for (const p of paymentsQuery as any[]) {
-    // Generate description showing coverage summary if available
     let desc = p.note ? `${p.payer_name} - ${p.note}` : `${p.payer_name} (${p.house_code})`;
     if (p.house_code && !desc.includes(p.house_code)) {
       desc = `Blok ${p.house_code} - ${desc}`;
@@ -82,8 +77,8 @@ export function getAllLedgerRawItems(db = getDb(), upToDate?: string): Array<{
 
   // Other Income
   const otherIncomeQuery = upToDate
-    ? db.prepare('SELECT * FROM other_income WHERE date <= ? ORDER BY date ASC, created_at ASC').all(upToDate)
-    : db.prepare('SELECT * FROM other_income ORDER BY date ASC, created_at ASC').all();
+    ? await db.prepare('SELECT * FROM other_income WHERE date <= ? ORDER BY date ASC, created_at ASC').all(upToDate)
+    : await db.prepare('SELECT * FROM other_income ORDER BY date ASC, created_at ASC').all();
 
   for (const oi of otherIncomeQuery as any[]) {
     items.push({
@@ -104,8 +99,8 @@ export function getAllLedgerRawItems(db = getDb(), upToDate?: string): Array<{
 
   // Expenses
   const expensesQuery = upToDate
-    ? db.prepare('SELECT * FROM expenses WHERE date <= ? ORDER BY date ASC, created_at ASC').all(upToDate)
-    : db.prepare('SELECT * FROM expenses ORDER BY date ASC, created_at ASC').all();
+    ? await db.prepare('SELECT * FROM expenses WHERE date <= ? ORDER BY date ASC, created_at ASC').all(upToDate)
+    : await db.prepare('SELECT * FROM expenses ORDER BY date ASC, created_at ASC').all();
 
   for (const exp of expensesQuery as any[]) {
     items.push({
@@ -126,8 +121,8 @@ export function getAllLedgerRawItems(db = getDb(), upToDate?: string): Array<{
 
   // Cash Advance Settlements (Community paying back resident in cash)
   const advanceSettlementsQuery = upToDate
-    ? db.prepare("SELECT * FROM advance_settlements WHERE settlement_type = 'cash' AND date <= ? ORDER BY date ASC, created_at ASC").all(upToDate)
-    : db.prepare("SELECT * FROM advance_settlements WHERE settlement_type = 'cash' ORDER BY date ASC, created_at ASC").all();
+    ? await db.prepare("SELECT * FROM advance_settlements WHERE settlement_type = 'cash' AND date <= ? ORDER BY date ASC, created_at ASC").all(upToDate)
+    : await db.prepare("SELECT * FROM advance_settlements WHERE settlement_type = 'cash' ORDER BY date ASC, created_at ASC").all();
 
   for (const as of advanceSettlementsQuery as any[]) {
     items.push({
@@ -161,12 +156,12 @@ export function getAllLedgerRawItems(db = getDb(), upToDate?: string): Array<{
  * Calculates the exact opening balance at the start of a year-month (e.g. "2026-09").
  * Carries over continuously from all transactions before the first day of that month.
  */
-export function calculateOpeningBalanceForMonth(yearMonth: string, db = getDb()): number {
-  const { balance: initialBalance, effectiveDate } = getInitialOpeningBalance(db);
+export async function calculateOpeningBalanceForMonth(yearMonth: string, db: DatabaseClient = getDb()): Promise<number> {
+  const { balance: initialBalance } = await getInitialOpeningBalance(db);
   const startOfMonth = `${yearMonth}-01`;
 
-  // All transactions strictly before startOfMonth and on/after effectiveDate
-  const allItems = getAllLedgerRawItems(db, `${yearMonth}-00`); // effectively before start of month
+  // All transactions strictly before startOfMonth
+  const allItems = await getAllLedgerRawItems(db, `${yearMonth}-00`);
 
   let running = initialBalance;
   for (const item of allItems) {
@@ -181,25 +176,26 @@ export function calculateOpeningBalanceForMonth(yearMonth: string, db = getDb())
 /**
  * Returns dynamic ledger summary for a specific year and month (e.g. 2026, 9)
  */
-export function getMonthLedger(
+export async function getMonthLedger(
   year: number,
   month: number,
   filters?: LedgerFilterOptions,
-  db = getDb()
-): MonthLedgerSummary {
+  db: DatabaseClient = getDb()
+): Promise<MonthLedgerSummary> {
   const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
   const startOfMonth = `${yearMonth}-01`;
   const endOfMonth = `${yearMonth}-31`;
 
   // Compute opening balance
-  const openingBalance = calculateOpeningBalanceForMonth(yearMonth, db);
+  const openingBalance = await calculateOpeningBalanceForMonth(yearMonth, db);
 
   // Month lock status
-  const lockRow = db.prepare('SELECT * FROM month_locks WHERE year_month = ?').get(yearMonth) as any;
+  const lockRow = (await db.prepare('SELECT * FROM month_locks WHERE year_month = ?').get(yearMonth)) as any;
   const status: MonthLockStatus = lockRow?.status === 'terkunci' ? 'terkunci' : 'draft';
 
   // Get raw items for this month
-  const rawItems = getAllLedgerRawItems(db).filter((i) => i.date >= startOfMonth && i.date <= endOfMonth);
+  const allRawItems = await getAllLedgerRawItems(db);
+  const rawItems = allRawItems.filter((i) => i.date >= startOfMonth && i.date <= endOfMonth);
 
   // Apply filters if provided
   let filteredItems = rawItems;
@@ -274,7 +270,7 @@ export function getMonthLedger(
 /**
  * Returns 12-month summary for a selected year
  */
-export function getYearLedgerSummary(year: number, db = getDb()): {
+export async function getYearLedgerSummary(year: number, db: DatabaseClient = getDb()): Promise<{
   year: number;
   months: Array<{
     month: number;
@@ -290,7 +286,7 @@ export function getYearLedgerSummary(year: number, db = getDb()): {
   total_pengeluaran: number;
   net_change: number;
   closing_balance_year: number;
-} {
+}> {
   const months: Array<{
     month: number;
     month_name: string;
@@ -306,7 +302,7 @@ export function getYearLedgerSummary(year: number, db = getDb()): {
   let yearPengeluaran = 0;
 
   for (let m = 1; m <= 12; m++) {
-    const summary = getMonthLedger(year, m, undefined, db);
+    const summary = await getMonthLedger(year, m, undefined, db);
     months.push({
       month: m,
       month_name: BULAN_INDONESIA[m],
@@ -335,15 +331,15 @@ export function getYearLedgerSummary(year: number, db = getDb()): {
 /**
  * Multi-year overview: each recorded year's summary
  */
-export function getMultiYearLedgerSummary(db = getDb()): Array<{
+export async function getMultiYearLedgerSummary(db: DatabaseClient = getDb()): Promise<Array<{
   year: number;
   opening_balance: number;
   total_pemasukan: number;
   total_pengeluaran: number;
   closing_balance: number;
-}> {
+}>> {
   // Find all distinct years in transactions
-  const rawItems = getAllLedgerRawItems(db);
+  const rawItems = await getAllLedgerRawItems(db);
   const yearsSet = new Set<number>();
   for (const item of rawItems) {
     const y = parseInt(item.date.slice(0, 4), 10);
@@ -355,16 +351,26 @@ export function getMultiYearLedgerSummary(db = getDb()): Array<{
   }
 
   const sortedYears = Array.from(yearsSet).sort();
-  return sortedYears.map((y) => {
-    const yr = getYearLedgerSummary(y, db);
+  const results: Array<{
+    year: number;
+    opening_balance: number;
+    total_pemasukan: number;
+    total_pengeluaran: number;
+    closing_balance: number;
+  }> = [];
+
+  for (const y of sortedYears) {
+    const yr = await getYearLedgerSummary(y, db);
     const firstMonth = yr.months[0];
     const lastMonth = yr.months[11];
-    return {
+    results.push({
       year: y,
       opening_balance: firstMonth.opening_balance,
       total_pemasukan: yr.total_pemasukan,
       total_pengeluaran: yr.total_pengeluaran,
       closing_balance: lastMonth.closing_balance,
-    };
-  });
+    });
+  }
+
+  return results;
 }

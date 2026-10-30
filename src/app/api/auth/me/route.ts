@@ -5,14 +5,14 @@ import { getSessionUser, seedDefaultUsers } from '@/lib/auth';
 export async function GET(req: NextRequest) {
   try {
     const db = getDb();
-    seedDefaultUsers(db);
+    await seedDefaultUsers(db);
 
     const token = req.cookies.get('paradessa_session')?.value;
     if (!token) {
       return NextResponse.json({ success: false, user: null }, { status: 401 });
     }
 
-    const user = getSessionUser(token, db);
+    const user = await getSessionUser(token, db);
     if (!user) {
       return NextResponse.json({ success: false, user: null }, { status: 401 });
     }
@@ -28,4 +28,3 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-

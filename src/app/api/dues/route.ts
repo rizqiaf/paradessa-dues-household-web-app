@@ -11,10 +11,10 @@ export async function GET(request: Request) {
     const year = parseInt(searchParams.get('year') || String(now.getFullYear()), 10);
 
     // Get all houses sorted by code
-    const houses = db.prepare('SELECT * FROM houses ORDER BY block ASC, length(code) ASC, code ASC').all() as any[];
+    const houses = (await db.prepare('SELECT * FROM houses ORDER BY block ASC, length(code) ASC, code ASC').all()) as any[];
 
     // Get all residents active
-    const residents = db.prepare('SELECT * FROM residents WHERE is_active = 1').all() as any[];
+    const residents = (await db.prepare('SELECT * FROM residents WHERE is_active = 1').all()) as any[];
     const residentByHouse: Record<string, string> = {};
     for (const r of residents) {
       residentByHouse[r.house_code] = r.name;
@@ -23,10 +23,10 @@ export async function GET(request: Request) {
     // Get dues for the selected year
     const startYm = `${year}-01`;
     const endYm = `${year}-12`;
-    const duesYear = db.prepare(`
+    const duesYear = (await db.prepare(`
       SELECT * FROM dues
       WHERE year_month >= ? AND year_month <= ?
-    `).all(startYm, endYm) as any[];
+    `).all(startYm, endYm)) as any[];
 
     // Group dues by house_code -> year_month -> array of components
     const duesMap: Record<string, Record<string, any[]>> = {};
@@ -37,12 +37,12 @@ export async function GET(request: Request) {
     }
 
     // Also get all payment allocations for the year to show which payment paid what
-    const allocationsYear = db.prepare(`
+    const allocationsYear = (await db.prepare(`
       SELECT a.*, p.payer_name, p.payment_number, p.date as payment_date
       FROM payment_allocations a
       JOIN payments p ON a.payment_id = p.id
       WHERE a.year_month >= ? AND a.year_month <= ?
-    `).all(startYm, endYm) as any[];
+    `).all(startYm, endYm)) as any[];
 
     const allocMap: Record<string, Record<string, any[]>> = {};
     for (const a of allocationsYear) {
@@ -52,12 +52,12 @@ export async function GET(request: Request) {
     }
 
     // Calculate arrears from earlier years (< year-01)
-    const arrearsEarlierRows = db.prepare(`
+    const arrearsEarlierRows = (await db.prepare(`
       SELECT house_code, sum(amount - paid_amount) as arrears
       FROM dues
       WHERE year_month < ? AND (amount - paid_amount) > 0
       GROUP BY house_code
-    `).all(startYm) as any[];
+    `).all(startYm)) as any[];
     const arrearsEarlierMap: Record<string, number> = {};
     for (const ar of arrearsEarlierRows) {
       arrearsEarlierMap[ar.house_code] = ar.arrears;

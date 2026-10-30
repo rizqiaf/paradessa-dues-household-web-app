@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     query += ' ORDER BY timestamp DESC LIMIT ?';
     params.push(limit);
 
-    const logs = db.prepare(query).all(...params);
+    const logs = await db.prepare(query).all(...params);
     return NextResponse.json({ success: true, data: logs });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

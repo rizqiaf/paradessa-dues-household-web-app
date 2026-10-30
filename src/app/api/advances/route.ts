@@ -6,8 +6,8 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const db = getDb();
-    const advances = db.prepare('SELECT * FROM advances ORDER BY date DESC').all() as any[];
-    const settlements = db.prepare('SELECT * FROM advance_settlements ORDER BY date DESC').all() as any[];
+    const advances = (await db.prepare('SELECT * FROM advances ORDER BY date DESC').all()) as any[];
+    const settlements = (await db.prepare('SELECT * FROM advance_settlements ORDER BY date DESC').all()) as any[];
 
     const settlementsByAdv: Record<string, any[]> = {};
     for (const s of settlements) {
@@ -42,12 +42,12 @@ export async function POST(request: Request) {
       const id = `ADV-${Date.now()}`;
       const advanceNumber = `ADV-${txDate.replace(/-/g, '')}-${Math.floor(Math.random() * 900 + 100)}`;
 
-      db.prepare(`
+      await db.prepare(`
         INSERT INTO advances (id, advance_number, date, resident_name, house_code, description, total_amount, settled_amount, balance, status, note, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, 'active', ?, datetime('now'), datetime('now'))
       `).run(id, advanceNumber, txDate, resident_name, house_code || null, description, amount, amount, note || null);
 
-      recordAuditLog('Bendahara', 'CREATE', 'advance', id, null, { resident_name, house_code, amount, description });
+      await recordAuditLog('Bendahara', 'CREATE', 'advance', id, null, { resident_name, house_code, amount, description }, db);
 
       return NextResponse.json({ success: true, id, advanceNumber });
     }
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, error: 'ID talangan dan nominal pelunasan wajib diisi' }, { status: 400 });
       }
 
-      const adv = db.prepare('SELECT * FROM advances WHERE id = ?').get(advance_id) as any;
+      const adv = (await db.prepare('SELECT * FROM advances WHERE id = ?').get(advance_id)) as any;
       if (!adv) {
         return NextResponse.json({ success: false, error: 'Data talangan tidak ditemukan' }, { status: 404 });
       }
@@ -71,25 +71,23 @@ export async function POST(request: Request) {
       const newBalance = adv.total_amount - newSettled;
       const newStatus = newBalance <= 0 ? 'settled' : 'active';
 
-      db.transaction(() => {
-        db.prepare(`
-          INSERT INTO advance_settlements (id, advance_id, date, amount, settlement_type, due_year_month, note, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-        `).run(settleId, advance_id, txDate, amount, settlement_type || 'dues_offset', due_year_month || null, note || null);
+      await db.prepare(`
+        INSERT INTO advance_settlements (id, advance_id, date, amount, settlement_type, due_year_month, note, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      `).run(settleId, advance_id, txDate, amount, settlement_type || 'dues_offset', due_year_month || null, note || null);
 
-        db.prepare(`
-          UPDATE advances
-          SET settled_amount = ?, balance = ?, status = ?, updated_at = datetime('now')
-          WHERE id = ?
-        `).run(newSettled, newBalance, newStatus, advance_id);
+      await db.prepare(`
+        UPDATE advances
+        SET settled_amount = ?, balance = ?, status = ?, updated_at = datetime('now')
+        WHERE id = ?
+      `).run(newSettled, newBalance, newStatus, advance_id);
 
-        recordAuditLog('Bendahara', 'UPDATE', 'advance_settlement', settleId, null, {
-          advance_id,
-          amount,
-          settlement_type,
-          remainingBalance: newBalance,
-        });
-      })();
+      await recordAuditLog('Bendahara', 'UPDATE', 'advance_settlement', settleId, null, {
+        advance_id,
+        amount,
+        settlement_type,
+        remainingBalance: newBalance,
+      }, db);
 
       return NextResponse.json({ success: true, settleId, remainingBalance: newBalance, status: newStatus });
     }

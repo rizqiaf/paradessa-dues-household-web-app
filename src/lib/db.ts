@@ -1,29 +1,100 @@
-import Database from 'better-sqlite3';
+import { createClient, type Client } from '@libsql/client';
 import path from 'path';
-import fs from 'fs';
 
-const DB_PATH = path.join(process.cwd(), 'data', 'paradessa.db');
-
-// Ensure data folder exists
-const dataDir = path.dirname(DB_PATH);
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+export interface DbStatement {
+  all<T = any>(...args: any[]): Promise<T[]>;
+  get<T = any>(...args: any[]): Promise<T | undefined>;
+  run(...args: any[]): Promise<{ changes: number; lastInsertRowid: any }>;
 }
 
-let dbInstance: Database.Database | null = null;
+export interface DatabaseClient {
+  client: Client;
+  prepare(sql: string): DbStatement;
+  exec(sql: string): Promise<void>;
+  transaction<T>(fn: (txDb: DatabaseClient) => Promise<T>): Promise<T>;
+}
 
-export function getDb(): Database.Database {
+function normalizeArgs(args: any[]): any[] {
+  if (args.length === 1 && Array.isArray(args[0])) {
+    return args[0];
+  }
+  return args;
+}
+
+export function createDbWrapper(c: Client | any): DatabaseClient {
+  return {
+    client: c,
+    prepare(sql: string): DbStatement {
+      return {
+        async all<T = any>(...args: any[]): Promise<T[]> {
+          const res = await c.execute({ sql, args: normalizeArgs(args) });
+          return (res.rows as unknown) as T[];
+        },
+        async get<T = any>(...args: any[]): Promise<T | undefined> {
+          const res = await c.execute({ sql, args: normalizeArgs(args) });
+          return (res.rows[0] as unknown) as (T | undefined);
+        },
+        async run(...args: any[]): Promise<{ changes: number; lastInsertRowid: any }> {
+          const res = await c.execute({ sql, args: normalizeArgs(args) });
+          return {
+            changes: res.rowsAffected,
+            lastInsertRowid: res.lastInsertRowid,
+          };
+        },
+      };
+    },
+    async exec(sql: string): Promise<void> {
+      await c.executeMultiple(sql);
+    },
+    async transaction<T>(fn: (txDb: DatabaseClient) => Promise<T>): Promise<T> {
+      if (typeof c.transaction === 'function') {
+        const tx = await c.transaction('write');
+        try {
+          const txDb = createDbWrapper(tx);
+          const result = await fn(txDb);
+          await tx.commit();
+          return result;
+        } catch (err) {
+          try {
+            await tx.rollback();
+          } catch (_) {}
+          throw err;
+        }
+      } else {
+        return await fn(this);
+      }
+    },
+  };
+}
+
+let dbInstance: DatabaseClient | null = null;
+
+export function getDb(): DatabaseClient {
   if (!dbInstance) {
-    dbInstance = new Database(DB_PATH);
-    dbInstance.pragma('journal_mode = WAL');
-    dbInstance.pragma('foreign_keys = ON');
-    initSchema(dbInstance);
+    const url =
+      process.env.TURSO_DATABASE_URL ||
+      (process.env.NODE_ENV === 'production'
+        ? ':memory:'
+        : `file:${path.join(process.cwd(), 'data', 'paradessa.db')}`);
+    const authToken = process.env.TURSO_AUTH_TOKEN;
+
+    const client = createClient({
+      url,
+      authToken,
+    });
+
+    dbInstance = createDbWrapper(client);
   }
   return dbInstance;
 }
 
-export function initSchema(db: Database.Database) {
-  db.exec(`
+export function createTestDb(): DatabaseClient {
+  const client = createClient({ url: ':memory:' });
+  return createDbWrapper(client);
+}
+
+export async function initSchema(db: DatabaseClient = getDb()) {
+  await db.exec(`
     -- Houses
     CREATE TABLE IF NOT EXISTS houses (
       id TEXT PRIMARY KEY,
@@ -269,28 +340,32 @@ export function initSchema(db: Database.Database) {
 }
 
 // Log action to audit_log
-export function recordAuditLog(
+export async function recordAuditLog(
   userName: string,
   action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOCK' | 'UNLOCK' | 'IMPORT',
   entityType: string,
   entityId: string,
   beforeValue?: any,
-  afterValue?: any
+  afterValue?: any,
+  db: DatabaseClient = getDb()
 ) {
-  const db = getDb();
-  const id = `AUD-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-  const timestamp = new Date().toISOString();
-  db.prepare(`
-    INSERT INTO audit_log (id, timestamp, user_name, action, entity_type, entity_id, before_value, after_value)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    id,
-    timestamp,
-    userName,
-    action,
-    entityType,
-    entityId,
-    beforeValue ? JSON.stringify(beforeValue) : null,
-    afterValue ? JSON.stringify(afterValue) : null
-  );
+  try {
+    const id = `AUD-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const timestamp = new Date().toISOString();
+    await db.prepare(`
+      INSERT INTO audit_log (id, timestamp, user_name, action, entity_type, entity_id, before_value, after_value)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      timestamp,
+      userName,
+      action,
+      entityType,
+      entityId,
+      beforeValue ? JSON.stringify(beforeValue) : null,
+      afterValue ? JSON.stringify(afterValue) : null
+    );
+  } catch (err) {
+    console.error('Failed to record audit log:', err);
+  }
 }

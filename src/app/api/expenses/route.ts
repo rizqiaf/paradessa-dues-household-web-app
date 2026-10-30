@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     query += ' ORDER BY date DESC, created_at DESC LIMIT ?';
     params.push(limit);
 
-    const expenses = db.prepare(query).all(...params);
+    const expenses = await db.prepare(query).all(...params);
     return NextResponse.json({ success: true, data: expenses });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     const txYearMonth = txDate.slice(0, 7);
 
     // Check month lock
-    const lock = db.prepare("SELECT status FROM month_locks WHERE year_month = ? AND status = 'terkunci'").get(txYearMonth) as any;
+    const lock = (await db.prepare("SELECT status FROM month_locks WHERE year_month = ? AND status = 'terkunci'").get(txYearMonth)) as any;
     if (lock) {
       return NextResponse.json({
         success: false,
@@ -51,22 +51,22 @@ export async function POST(request: Request) {
     const id = `EXP-${Date.now()}`;
     const expenseNumber = `EXP-${txDate.replace(/-/g, '')}-${Math.floor(Math.random() * 900 + 100)}`;
 
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO expenses (id, expense_number, date, category, description, amount, payee, receipt_photo, note, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
     `).run(id, expenseNumber, txDate, category, description, amount, payee || null, receipt_photo || null, note || null);
 
     // Ensure category exists
-    db.prepare('INSERT OR IGNORE INTO expense_categories (id, name, is_default) VALUES (?, ?, 0)')
+    await db.prepare('INSERT OR IGNORE INTO expense_categories (id, name, is_default) VALUES (?, ?, 0)')
       .run(`CAT-${Date.now()}`, category);
 
-    recordAuditLog('Bendahara', 'CREATE', 'expense', id, null, {
+    await recordAuditLog('Bendahara', 'CREATE', 'expense', id, null, {
       expenseNumber,
       category,
       amount,
       date: txDate,
       description,
-    });
+    }, db);
 
     return NextResponse.json({ success: true, id, expenseNumber });
   } catch (error: any) {

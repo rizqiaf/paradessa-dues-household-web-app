@@ -18,12 +18,12 @@ export async function POST(request: Request) {
     const txYearMonth = txDate.slice(0, 7);
 
     // 1. Get house subscriptions
-    const subRows = db.prepare(`
+    const subRows = (await db.prepare(`
       SELECT s.component_name, f.amount
       FROM house_subscriptions s
       JOIN fee_components f ON s.component_id = f.id
       WHERE s.house_code = ? AND s.is_active = 1
-    `).all(house_code) as any[];
+    `).all(house_code)) as any[];
 
     // Fallback if not explicitly subscribed in table: default to 3 components (Pokok, Air, Sampah)
     const subscriptions = subRows.length > 0 ? subRows : [
@@ -33,12 +33,12 @@ export async function POST(request: Request) {
     ];
 
     // 2. Get existing unpaid dues for this house
-    const duesRows = db.prepare(`
+    const duesRows = (await db.prepare(`
       SELECT id, year_month, component_name, amount, paid_amount, (amount - paid_amount) as remaining
       FROM dues
       WHERE house_code = ? AND (amount - paid_amount) > 0
       ORDER BY year_month ASC
-    `).all(house_code) as any[];
+    `).all(house_code)) as any[];
 
     // 3. Quick lunas calculation: how much is needed to pay all unpaid dues up to current month
     let quickLunasAmount = 0;
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     const allocationResult = calculateAutoAllocation(payAmount, duesRows, subscriptions, txYearMonth);
 
     // 5. Existing house credit
-    const creditRow = db.prepare('SELECT sum(amount) as total_credit FROM house_credits WHERE house_code = ?').get(house_code) as any;
+    const creditRow = (await db.prepare('SELECT sum(amount) as total_credit FROM house_credits WHERE house_code = ?').get(house_code)) as any;
 
     return NextResponse.json({
       success: true,

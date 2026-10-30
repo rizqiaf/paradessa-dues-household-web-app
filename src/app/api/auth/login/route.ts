@@ -5,7 +5,7 @@ import { verifyPassword, createSession, seedDefaultUsers } from '@/lib/auth';
 export async function POST(req: NextRequest) {
   try {
     const db = getDb();
-    seedDefaultUsers(db);
+    await seedDefaultUsers(db);
 
     const body = await req.json();
     const { username, password } = body;
@@ -20,10 +20,10 @@ export async function POST(req: NextRequest) {
     const cleanUsername = String(username).trim().toLowerCase();
 
     // Find user by username, phone, or email
-    const user = db.prepare(`
+    const user = (await db.prepare(`
       SELECT * FROM users
       WHERE lower(username) = ? OR phone = ? OR lower(email) = ?
-    `).get(cleanUsername, username, cleanUsername) as any;
+    `).get(cleanUsername, username, cleanUsername)) as any;
 
     if (!user) {
       return NextResponse.json(
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create session
-    const { token, expiresAt } = createSession(user.id, db);
+    const { token, expiresAt } = await createSession(user.id, db);
 
     const safeUser = {
       id: user.id,
@@ -84,4 +84,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

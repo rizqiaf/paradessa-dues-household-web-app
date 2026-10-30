@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { getDb, initSchema } from '../lib/db';
+import { createTestDb, initSchema } from '../lib/db';
 import {
   hashPassword,
   verifyPassword,
@@ -10,14 +10,11 @@ import {
 } from '../lib/auth';
 
 describe('Auth & User Management System', () => {
-  const db = getDb();
+  let db: any;
 
-  beforeEach(() => {
-    initSchema(db);
-    db.exec(`
-      DELETE FROM sessions;
-      DELETE FROM users;
-    `);
+  beforeEach(async () => {
+    db = createTestDb();
+    await initSchema(db);
   });
 
   it('correctly hashes and verifies passwords with scrypt', () => {
@@ -28,9 +25,9 @@ describe('Auth & User Management System', () => {
     expect(verifyPassword('wrongpassword', hash)).toBe(false);
   });
 
-  it('seeds default admin and resident accounts when empty', () => {
-    seedDefaultUsers(db);
-    const users = db.prepare('SELECT * FROM users').all() as any[];
+  it('seeds default admin and resident accounts when empty', async () => {
+    await seedDefaultUsers(db);
+    const users = (await db.prepare('SELECT * FROM users').all()) as any[];
     expect(users.length).toBe(2);
 
     const admin = users.find((u) => u.username === 'bendahara');
@@ -45,24 +42,23 @@ describe('Auth & User Management System', () => {
     expect(verifyPassword('warga2026', warga.password_hash)).toBe(true);
   });
 
-  it('creates, verifies and destroys sessions', () => {
-    seedDefaultUsers(db);
-    const admin = db.prepare("SELECT * FROM users WHERE username = 'bendahara'").get() as any;
+  it('creates, verifies and destroys sessions', async () => {
+    await seedDefaultUsers(db);
+    const admin = (await db.prepare("SELECT * FROM users WHERE username = 'bendahara'").get()) as any;
 
-    const { token, expiresAt } = createSession(admin.id, db);
+    const { token, expiresAt } = await createSession(admin.id, db);
     expect(token).toBeDefined();
     expect(new Date(expiresAt).getTime()).toBeGreaterThan(Date.now());
 
     // Retrieve active user by session token
-    const user = getSessionUser(token, db);
+    const user = await getSessionUser(token, db);
     expect(user).toBeDefined();
     expect(user?.username).toBe('bendahara');
     expect(user?.role).toBe('admin');
 
     // Destroy session (Logout)
-    destroySession(token, db);
-    const userAfter = getSessionUser(token, db);
+    await destroySession(token, db);
+    const userAfter = await getSessionUser(token, db);
     expect(userAfter).toBeNull();
   });
 });
-

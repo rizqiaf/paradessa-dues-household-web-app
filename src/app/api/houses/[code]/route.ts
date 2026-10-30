@@ -9,42 +9,42 @@ export async function GET(request: Request, { params }: { params: { code: string
     const db = getDb();
     const code = normalizeHouseCode(params.code);
 
-    const house = db.prepare('SELECT * FROM houses WHERE code = ?').get(code) as any;
+    const house = (await db.prepare('SELECT * FROM houses WHERE code = ?').get(code)) as any;
     if (!house) {
       return NextResponse.json({ success: false, error: 'Rumah tidak ditemukan' }, { status: 404 });
     }
 
     // Residents history
-    const residents = db.prepare('SELECT * FROM residents WHERE house_code = ? ORDER BY start_date ASC').all(code) as any[];
+    const residents = (await db.prepare('SELECT * FROM residents WHERE house_code = ? ORDER BY start_date ASC').all(code)) as any[];
 
     // Subscriptions
-    const subscriptions = db.prepare(`
+    const subscriptions = (await db.prepare(`
       SELECT s.*, f.amount
       FROM house_subscriptions s
       JOIN fee_components f ON s.component_id = f.id
       WHERE s.house_code = ?
-    `).all(code) as any[];
+    `).all(code)) as any[];
 
     // Dues history
-    const dues = db.prepare(`
+    const dues = (await db.prepare(`
       SELECT * FROM dues
       WHERE house_code = ?
       ORDER BY year_month ASC
-    `).all(code) as any[];
+    `).all(code)) as any[];
 
     // Payments history
-    const payments = db.prepare(`
+    const payments = (await db.prepare(`
       SELECT * FROM payments
       WHERE house_code = ?
       ORDER BY date DESC, created_at DESC
-    `).all(code) as any[];
+    `).all(code)) as any[];
 
     // Payment allocations
     const paymentIds = payments.map((p) => p.id);
     let allocationsByPayment: Record<string, any[]> = {};
     if (paymentIds.length > 0) {
       const placeholders = paymentIds.map(() => '?').join(',');
-      const allocRows = db.prepare(`SELECT * FROM payment_allocations WHERE payment_id IN (${placeholders})`).all(...paymentIds) as any[];
+      const allocRows = (await db.prepare(`SELECT * FROM payment_allocations WHERE payment_id IN (${placeholders})`).all(...paymentIds)) as any[];
       for (const a of allocRows) {
         if (!allocationsByPayment[a.payment_id]) allocationsByPayment[a.payment_id] = [];
         allocationsByPayment[a.payment_id].push(a);
@@ -52,11 +52,11 @@ export async function GET(request: Request, { params }: { params: { code: string
     }
 
     // Credits
-    const credits = db.prepare('SELECT * FROM house_credits WHERE house_code = ? ORDER BY created_at DESC').all(code) as any[];
+    const credits = (await db.prepare('SELECT * FROM house_credits WHERE house_code = ? ORDER BY created_at DESC').all(code)) as any[];
     const totalCredit = credits.reduce((sum, c) => sum + c.amount, 0);
 
     // Advances associated with this house
-    const advances = db.prepare('SELECT * FROM advances WHERE house_code = ? ORDER BY date DESC').all(code) as any[];
+    const advances = (await db.prepare('SELECT * FROM advances WHERE house_code = ? ORDER BY date DESC').all(code)) as any[];
 
     // Outstanding unpaid dues list
     const unpaidDues = dues.filter((d) => (d.amount - d.paid_amount) > 0);
@@ -124,7 +124,7 @@ export async function PUT(request: Request, { params }: { params: { code: string
     const body = await request.json();
     const { status, handover_date, is_merged, merged_with, notes } = body;
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE houses
       SET status = coalesce(?, status),
           handover_date = ?,
@@ -135,7 +135,7 @@ export async function PUT(request: Request, { params }: { params: { code: string
       WHERE code = ?
     `).run(status, handover_date || null, is_merged !== undefined ? (is_merged ? 1 : 0) : null, merged_with || null, notes || null, code);
 
-    recordAuditLog('Bendahara', 'UPDATE', 'house', `H-${code}`, null, body);
+    await recordAuditLog('Bendahara', 'UPDATE', 'house', `H-${code}`, null, body, db);
     return NextResponse.json({ success: true, code });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

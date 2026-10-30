@@ -1,4 +1,4 @@
-import { getDb } from './db';
+import { getDb, DatabaseClient } from './db';
 import { BULAN_INDONESIA, formatNumber, formatRupiah } from './format';
 import { getMonthLedger } from './ledger';
 import { LedgerItem, MonthLedgerSummary } from './types';
@@ -49,12 +49,12 @@ export function getDaysInMonth(year: number, month: number): number {
 /**
  * Generates the official report data matching the exact workbook layout
  */
-export function generateMonthlyReportData(
+export async function generateMonthlyReportData(
   year: number,
   month: number,
-  db = getDb()
-): MonthlyReportData {
-  const ledger = getMonthLedger(year, month, undefined, db);
+  db: DatabaseClient = getDb()
+): Promise<MonthlyReportData> {
+  const ledger = await getMonthLedger(year, month, undefined, db);
   const daysInCurMonth = getDaysInMonth(year, month);
   const prevMonthDate = new Date(year, month - 1, 0); // last day of prev month
   const prevDays = prevMonthDate.getDate();

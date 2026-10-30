@@ -13,23 +13,23 @@ export async function GET(request: Request) {
     const month = parseInt(searchParams.get('month') || String(now.getMonth() + 1), 10);
 
     // Current month ledger
-    const currentMonthLedger = getMonthLedger(year, month, undefined, db);
+    const currentMonthLedger = await getMonthLedger(year, month, undefined, db);
 
     // Current cash balance across all transactions to date
-    const allLedger = getYearLedgerSummary(year, db);
+    const allLedger = await getYearLedgerSummary(year, db);
     const currentBalance = currentMonthLedger.closing_balance;
 
     // Collection rate for this month
     const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
-    const totalDuesRow = db.prepare(`
+    const totalDuesRow = (await db.prepare(`
       SELECT count(DISTINCT house_code) as total_billed,
              count(DISTINCT CASE WHEN status = 'lunas' THEN house_code END) as total_paid
       FROM dues
       WHERE year_month = ?
-    `).get(yearMonth) as any;
+    `).get(yearMonth)) as any;
 
     // Arrears: houses that haven't paid or have unpaid dues
-    const arrearsRows = db.prepare(`
+    const arrearsRows = (await db.prepare(`
       SELECT house_code,
              sum(amount - paid_amount) as total_owed,
              group_concat(DISTINCT year_month) as months_owed
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
       WHERE status != 'lunas' AND (amount - paid_amount) > 0
       GROUP BY house_code
       ORDER BY total_owed DESC
-    `).all() as any[];
+    `).all()) as any[];
 
     // 12-month bar chart data for selected year
     const chartData = allLedger.months.map((m) => ({

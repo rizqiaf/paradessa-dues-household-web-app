@@ -20,17 +20,17 @@ export async function GET(request: Request) {
     const search = searchParams.get('search') || undefined;
 
     if (view === 'multi-year') {
-      const summary = getMultiYearLedgerSummary(db);
+      const summary = await getMultiYearLedgerSummary(db);
       return NextResponse.json({ success: true, view: 'multi-year', data: summary });
     }
 
     if (view === 'year') {
-      const summary = getYearLedgerSummary(year, db);
+      const summary = await getYearLedgerSummary(year, db);
       return NextResponse.json({ success: true, view: 'year', year, data: summary });
     }
 
     // Default: month view
-    const summary = getMonthLedger(year, month, { category, houseCode, type, search }, db);
+    const summary = await getMonthLedger(year, month, { category, houseCode, type, search }, db);
     return NextResponse.json({ success: true, view: 'month', year, month, data: summary });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

@@ -6,10 +6,10 @@ import { normalizeHouseCode } from '@/lib/format';
 export async function GET(req: NextRequest) {
   try {
     const db = getDb();
-    seedDefaultUsers(db);
+    await seedDefaultUsers(db);
 
     const token = req.cookies.get('paradessa_session')?.value;
-    const currentUser = token ? getSessionUser(token, db) : null;
+    const currentUser = token ? await getSessionUser(token, db) : null;
 
     if (!currentUser || currentUser.role !== 'admin') {
       return NextResponse.json(
@@ -18,11 +18,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const users = db.prepare(`
+    const rows = (await db.prepare(`
       SELECT id, username, name, role, house_code, phone, email, is_active, created_at, updated_at
       FROM users
       ORDER BY role ASC, house_code ASC, username ASC
-    `).all().map((u: any) => ({
+    `).all()) as any[];
+
+    const users = rows.map((u: any) => ({
       ...u,
       is_active: Boolean(u.is_active),
     }));
@@ -42,10 +44,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const db = getDb();
-    seedDefaultUsers(db);
+    await seedDefaultUsers(db);
 
     const token = req.cookies.get('paradessa_session')?.value;
-    const currentUser = token ? getSessionUser(token, db) : null;
+    const currentUser = token ? await getSessionUser(token, db) : null;
 
     if (!currentUser || currentUser.role !== 'admin') {
       return NextResponse.json(
@@ -76,7 +78,7 @@ export async function POST(req: NextRequest) {
     const userRole = role === 'admin' ? 'admin' : 'warga';
 
     // Check unique username
-    const existing = db.prepare('SELECT id FROM users WHERE lower(username) = ?').get(cleanUsername);
+    const existing = await db.prepare('SELECT id FROM users WHERE lower(username) = ?').get(cleanUsername);
     if (existing) {
       return NextResponse.json(
         { success: false, error: `Username "${cleanUsername}" sudah digunakan.` },
@@ -88,7 +90,7 @@ export async function POST(req: NextRequest) {
     const passwordHash = hashPassword(password);
     const now = new Date().toISOString();
 
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO users (id, username, name, role, house_code, password_hash, phone, email, is_active, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
     `).run(
@@ -104,12 +106,12 @@ export async function POST(req: NextRequest) {
       now
     );
 
-    recordAuditLog(currentUser.name, 'CREATE', 'user', userId, null, {
+    await recordAuditLog(currentUser.name, 'CREATE', 'user', userId, null, {
       username: cleanUsername,
       name,
       role: userRole,
       house_code: cleanHouse,
-    });
+    }, db);
 
     return NextResponse.json({
       success: true,
@@ -123,4 +125,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

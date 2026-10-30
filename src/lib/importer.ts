@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { getDb, recordAuditLog } from './db';
+import { getDb, recordAuditLog, DatabaseClient } from './db';
 import { normalizeHouseCode, parseIndonesianDate, getHouseBlock, BULAN_INDONESIA, BULAN_INDONESIA_SHORT } from './format';
 import { calculateOpeningBalanceForMonth, getMonthLedger } from './ledger';
 
@@ -51,55 +51,61 @@ export const REPORT_BENCHMARKS: Record<string, { awal: number; masuk: number; ke
 };
 
 /**
- * Extracts month coverage from Indonesian note text
- * e.g. "Untuk Juli & Agustus 2026" -> ["2026-07", "2026-08"]
- * "Sampai April 2026" -> up to 2026-04
- * "Iuran Bulan Februari" -> ["2026-02"]
+ * Extracts comma-separated or text covered months from payment notes
+ * e.g. "Iuran Okt, Nov, Des 2025" -> ["2025-10", "2025-11", "2025-12"]
  */
 export function parseCoverageMonthsFromNote(note: string, transactionDate: string): string[] {
   if (!note) return [];
-  const lower = note.toLowerCase();
+  const cleanNote = note.toLowerCase();
   const txYear = transactionDate ? transactionDate.slice(0, 4) : '2026';
 
-  const monthMap: Record<string, string> = {
-    januari: '01', jan: '01',
-    februari: '02', feb: '02', febuari: '02',
-    maret: '03', mar: '03',
-    april: '04', apr: '04',
-    mei: '05', may: '05',
-    juni: '06', jun: '06',
-    juli: '07', jul: '07',
-    agustus: '08', agu: '08', agusuts: '08',
-    september: '09', sep: '09',
-    oktober: '10', okt: '10',
-    november: '11', nov: '11',
-    desember: '12', des: '12',
-  };
+  const covered: string[] = [];
 
-  const matchedMonths: string[] = [];
-  // Extract explicit year if mentioned in note, else txYear
-  const yearMatch = note.match(/202\d/);
-  const noteYear = yearMatch ? yearMatch[0] : txYear;
+  const monthPatterns: Array<{ name: string; num: string }> = [
+    { name: 'jan', num: '01' },
+    { name: 'feb', num: '02' },
+    { name: 'mar', num: '03' },
+    { name: 'apr', num: '04' },
+    { name: 'mei', num: '05' },
+    { name: 'may', num: '05' },
+    { name: 'jun', num: '06' },
+    { name: 'jul', num: '07' },
+    { name: 'agu', num: '08' },
+    { name: 'ags', num: '08' },
+    { name: 'aug', num: '08' },
+    { name: 'sep', num: '09' },
+    { name: 'okt', num: '10' },
+    { name: 'oct', num: '10' },
+    { name: 'nov', num: '11' },
+    { name: 'des', num: '12' },
+    { name: 'dec', num: '12' },
+  ];
 
-  for (const [key, mNum] of Object.entries(monthMap)) {
-    const regex = new RegExp(`\\b${key}\\b`, 'i');
-    if (regex.test(lower)) {
-      const ym = `${noteYear}-${mNum}`;
-      if (!matchedMonths.includes(ym)) {
-        matchedMonths.push(ym);
+  // Look for year explicitly mentioned in the note, e.g. "2025" or "2026"
+  const yearMatch = cleanNote.match(/202[4-9]/);
+  const yearToUse = yearMatch ? yearMatch[0] : txYear;
+
+  for (const m of monthPatterns) {
+    if (cleanNote.includes(m.name)) {
+      const ym = `${yearToUse}-${m.num}`;
+      if (!covered.includes(ym)) {
+        covered.push(ym);
       }
     }
   }
 
-  matchedMonths.sort();
-  return matchedMonths;
+  return covered;
 }
 
 /**
- * Import and populate the database from the workbook file or buffer
+ * Robust Excel Workbook Importer
+ * Parses both the "2026" master cash ledger sheet and "rekapan iuran dari awal" sheet.
  */
-export function importExcelWorkbook(fileBufferOrPath: Buffer | string, executeCommit = true): ParseResult {
-  const db = getDb();
+export async function importExcelWorkbook(
+  fileBufferOrPath: Buffer | string,
+  executeCommit = true,
+  db: DatabaseClient = getDb()
+): Promise<ParseResult> {
   const wb = typeof fileBufferOrPath === 'string'
     ? XLSX.readFile(fileBufferOrPath)
     : XLSX.read(fileBufferOrPath, { type: 'buffer' });
@@ -149,7 +155,7 @@ export function importExcelWorkbook(fileBufferOrPath: Buffer | string, executeCo
 
         if (executeCommit) {
           const houseId = `H-${code}`;
-          db.prepare(`
+          await db.prepare(`
             INSERT INTO houses (id, code, block, status, handover_date, is_merged, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
             ON CONFLICT(code) DO UPDATE SET
@@ -160,7 +166,7 @@ export function importExcelWorkbook(fileBufferOrPath: Buffer | string, executeCo
 
           if (rawName && !rawName.toUpperCase().includes('KANTOR')) {
             const residentId = `R-${code}-1`;
-            db.prepare(`
+            await db.prepare(`
               INSERT INTO residents (id, house_id, house_code, name, start_date, is_active, created_at)
               VALUES (?, ?, ?, ?, coalesce(?, '2025-01-01'), 1, datetime('now'))
               ON CONFLICT(id) DO UPDATE SET name = excluded.name
@@ -202,7 +208,7 @@ export function importExcelWorkbook(fileBufferOrPath: Buffer | string, executeCo
       let rawKeluar = row[5];
       let rawNote = String(row[7] || row[6] || '').trim();
 
-      // Handle split description across multiple cells (e.g. unescaped commas in CSV/Excel)
+      // Handle split description across multiple cells
       if (rawDesc.startsWith('"') && !rawDesc.endsWith('"')) {
         let endIdx = 3;
         for (let c = 4; c < row.length; c++) {
@@ -222,19 +228,14 @@ export function importExcelWorkbook(fileBufferOrPath: Buffer | string, executeCo
         rawNote = String(row[7 + shift] || row[6 + shift] || '').trim();
       }
 
-      // Check if completely empty row
       if (!rawHouse && !rawDate && !rawJenis && !rawDesc && !rawMasuk && !rawKeluar) {
         continue;
       }
 
-      // Stop if reached footer or new section header
       if (rawDesc.toLowerCase().includes('laporan keuangan') || rawJenis.toLowerCase().includes('saldo per')) {
         continue;
       }
 
-      // Handle talangan dues offsets (potong iuran warga tanpa tarik tunai dari kas):
-      // Row 95: Ganti Uang talang pak agung (120.000)
-      // Row 96: Ganti Uang Liwet pak robi (40.000)
       const isDuesOffset =
         rawDesc.toLowerCase().includes('ganti uang talang') ||
         rawDesc.toLowerCase().includes('ganti uang liwet');
@@ -242,32 +243,31 @@ export function importExcelWorkbook(fileBufferOrPath: Buffer | string, executeCo
       if (isDuesOffset) {
         if (executeCommit) {
           if (rawDesc.toLowerCase().includes('agung')) {
-            db.prepare(`
+            await db.prepare(`
               INSERT OR REPLACE INTO advances (id, advance_number, resident_name, house_code, description, total_amount, settled_amount, balance, status, date, note, created_at, updated_at)
               VALUES ('ADV-AGUNG-1', 'ADV-202511-01', 'Pak Agung', 'B50', 'Talang Reparasi Mesin Air', 400000, 120000, 280000, 'active', '2025-11-30', 'Sisa 280.000 setelah potong iuran Des 2025', datetime('now'), datetime('now'))
             `).run();
-            db.prepare(`
+            await db.prepare(`
               INSERT OR REPLACE INTO advance_settlements (id, advance_id, amount, settlement_type, due_year_month, date, note, created_at)
               VALUES ('SETTLE-AGUNG-1', 'ADV-AGUNG-1', 120000, 'dues_offset', '2025-12', '2025-12-31', 'Potong iuran Desember 2025', datetime('now'))
             `).run();
           } else if (rawDesc.toLowerCase().includes('robi')) {
-            db.prepare(`
+            await db.prepare(`
               INSERT OR REPLACE INTO advances (id, advance_number, resident_name, house_code, description, total_amount, settled_amount, balance, status, date, note, created_at, updated_at)
               VALUES ('ADV-ROBI-1', 'ADV-202512-01', 'Pak Robi', 'A3', 'Talang Uang Liwet Warga', 40000, 40000, 0, 'settled', '2025-12-31', 'Kompensasi iuran Januari 2026', datetime('now'), datetime('now'))
             `).run();
-            db.prepare(`
+            await db.prepare(`
               INSERT OR REPLACE INTO advance_settlements (id, advance_id, amount, settlement_type, due_year_month, date, note, created_at)
               VALUES ('SETTLE-ROBI-1', 'ADV-ROBI-1', 40000, 'dues_offset', '2026-01', '2025-12-31', 'Kompensasi iuran Januari 2026', datetime('now'))
             `).run();
           }
         }
-        continue; // Exclude from cash expenses to maintain exact cash balance
+        continue;
       }
 
       const houseCode = rawHouse ? normalizeHouseCode(String(rawHouse)) : '';
       let date = parseIndonesianDate(rawDate);
       if (!date) {
-        // Carry forward last date if not specified
         date = lastDate;
       } else {
         lastDate = date;
@@ -284,8 +284,6 @@ export function importExcelWorkbook(fileBufferOrPath: Buffer | string, executeCo
         if (!isNaN(parsed)) keluar = parsed;
       }
 
-      // RULE REQUIREMENT:
-      // "Detect expense rows whose amount sits in the Masuk column (Jenis = Pengeluaran/Kas Keluar) and move them to expenses."
       const isExpenseType =
         rawJenis.toLowerCase().includes('pengeluaran') ||
         rawJenis.toLowerCase().includes('kas keluar') ||
@@ -310,7 +308,6 @@ export function importExcelWorkbook(fileBufferOrPath: Buffer | string, executeCo
         const txId = `IMP-${date.replace(/-/g, '')}-${i}`;
 
         if (keluar > 0) {
-          // Expense
           expensesCount++;
           let category = 'Perbaikan/Maintenance';
           const lowerDesc = rawDesc.toLowerCase();
@@ -328,50 +325,45 @@ export function importExcelWorkbook(fileBufferOrPath: Buffer | string, executeCo
             category = 'Biaya Bank';
           }
 
-          db.prepare(`
+          await db.prepare(`
             INSERT INTO expenses (id, expense_number, date, category, description, amount, note, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
           `).run(txId, `EXP-${txId}`, date, category, rawDesc || category, keluar, rawNote || null);
         } else if (masuk > 0) {
-          // Masuk: either Payment from house or Other Income
           if (houseCode) {
             paymentsCount++;
             const houseId = `H-${houseCode}`;
 
-            // Ensure house exists
-            db.prepare(`
+            await db.prepare(`
               INSERT INTO houses (id, code, block, status, created_at, updated_at)
               VALUES (?, ?, ?, 'dihuni', datetime('now'), datetime('now'))
               ON CONFLICT(code) DO NOTHING
             `).run(houseId, houseCode, getHouseBlock(houseCode));
 
-            db.prepare(`
+            await db.prepare(`
               INSERT INTO payments (id, payment_number, date, house_id, house_code, payer_name, amount, method, note, created_at, updated_at)
               VALUES (?, ?, ?, ?, ?, ?, ?, 'transfer', ?, datetime('now'), datetime('now'))
             `).run(txId, `PAY-${txId}`, date, houseId, houseCode, rawDesc || houseCode, masuk, rawNote || null);
 
-            // Parse allocations from note if present
             const coverageMonths = parseCoverageMonthsFromNote(rawNote, date);
             if (coverageMonths.length > 0) {
               const amountPerMonth = Math.floor(masuk / coverageMonths.length);
               for (const ym of coverageMonths) {
-                db.prepare(`
+                await db.prepare(`
                   INSERT INTO payment_allocations (id, payment_id, house_id, house_code, year_month, component_name, amount, created_at)
                   VALUES (?, ?, ?, ?, ?, 'Total', ?, datetime('now'))
                 `).run(`ALLOC-${txId}-${ym}`, txId, houseId, houseCode, ym, amountPerMonth);
               }
             } else {
-              // Default allocation to the transaction's month
               const ym = date.slice(0, 7);
-              db.prepare(`
+              await db.prepare(`
                 INSERT INTO payment_allocations (id, payment_id, house_id, house_code, year_month, component_name, amount, created_at)
                 VALUES (?, ?, ?, ?, ?, 'Total', ?, datetime('now'))
               `).run(`ALLOC-${txId}-${ym}`, txId, houseId, houseCode, ym, masuk);
             }
           } else {
-            // Other income (e.g. kontraktor, patungan)
             otherIncomeCount++;
-            db.prepare(`
+            await db.prepare(`
               INSERT INTO other_income (id, income_number, date, category, description, amount, note, created_at, updated_at)
               VALUES (?, ?, ?, 'Pemasukan Non-Iuran', ?, ?, ?, datetime('now'), datetime('now'))
             `).run(txId, `INC-${txId}`, date, rawDesc || 'Pemasukan Lain', masuk, rawNote || null);
@@ -387,7 +379,7 @@ export function importExcelWorkbook(fileBufferOrPath: Buffer | string, executeCo
     const [yStr, mStr] = ym.split('-');
     const y = parseInt(yStr, 10);
     const m = parseInt(mStr, 10);
-    const summary = getMonthLedger(y, m, undefined, db);
+    const summary = await getMonthLedger(y, m, undefined, db);
 
     const diff = summary.closing_balance - exp.akhir;
     reconciliation.push({
@@ -407,12 +399,12 @@ export function importExcelWorkbook(fileBufferOrPath: Buffer | string, executeCo
   }
 
   if (executeCommit) {
-    recordAuditLog('System', 'IMPORT', 'workbook', 'master_2026', null, {
+    await recordAuditLog('System', 'IMPORT', 'workbook', 'master_2026', null, {
       houses: housesParsed,
       transactions: transactionsParsed,
       payments: paymentsCount,
       expenses: expensesCount,
-    });
+    }, db);
   }
 
   return {

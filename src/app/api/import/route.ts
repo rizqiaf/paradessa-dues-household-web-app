@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const result = importExcelWorkbook(buffer, true);
+    const result = await importExcelWorkbook(buffer, true);
     return NextResponse.json({
       success: true,
       message: 'Impor buku kas Excel berhasil diproses.',

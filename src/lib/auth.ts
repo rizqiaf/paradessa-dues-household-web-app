@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { getDb } from './db';
+import { getDb, DatabaseClient } from './db';
 import { UserAccount } from './types';
 
 const SESSION_EXPIRY_DAYS = 30;
@@ -30,7 +30,7 @@ export function verifyPassword(password: string, storedHash: string): boolean {
 /**
  * Create a new user session
  */
-export function createSession(userId: string, db = getDb()): { token: string; expiresAt: string } {
+export async function createSession(userId: string, db: DatabaseClient = getDb()): Promise<{ token: string; expiresAt: string }> {
   const token = crypto.randomBytes(32).toString('hex');
   const id = `SESS-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
   const expires = new Date();
@@ -38,7 +38,7 @@ export function createSession(userId: string, db = getDb()): { token: string; ex
   const expiresAt = expires.toISOString();
   const createdAt = new Date().toISOString();
 
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO sessions (id, user_id, token, expires_at, created_at)
     VALUES (?, ?, ?, ?, ?)
   `).run(id, userId, token, expiresAt, createdAt);
@@ -49,16 +49,16 @@ export function createSession(userId: string, db = getDb()): { token: string; ex
 /**
  * Get active user from session token
  */
-export function getSessionUser(token: string, db = getDb()): UserAccount | null {
+export async function getSessionUser(token: string, db: DatabaseClient = getDb()): Promise<UserAccount | null> {
   if (!token) return null;
 
   const now = new Date().toISOString();
-  const row = db.prepare(`
+  const row = (await db.prepare(`
     SELECT u.id, u.username, u.name, u.role, u.house_code, u.phone, u.email, u.is_active, u.created_at, u.updated_at
     FROM sessions s
     JOIN users u ON s.user_id = u.id
     WHERE s.token = ? AND s.expires_at > ? AND u.is_active = 1
-  `).get(token, now) as any;
+  `).get(token, now)) as any;
 
   if (!row) return null;
 
@@ -79,24 +79,24 @@ export function getSessionUser(token: string, db = getDb()): UserAccount | null 
 /**
  * Destroy a session
  */
-export function destroySession(token: string, db = getDb()): void {
+export async function destroySession(token: string, db: DatabaseClient = getDb()): Promise<void> {
   if (!token) return;
-  db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
+  await db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
 }
 
 /**
  * Seed default admin and sample resident user if users table is empty
  */
-export function seedDefaultUsers(db = getDb()): void {
-  const countRow = db.prepare('SELECT count(*) as count FROM users').get() as { count: number };
-  if (countRow.count > 0) return;
+export async function seedDefaultUsers(db: DatabaseClient = getDb()): Promise<void> {
+  const countRow = (await db.prepare('SELECT count(*) as count FROM users').get()) as { count: number } | undefined;
+  if (countRow && countRow.count > 0) return;
 
   const now = new Date().toISOString();
 
   // 1. Admin / Bendahara account
   const adminId = 'USR-ADMIN-1';
   const adminPassHash = hashPassword('paradessa2026');
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO users (id, username, name, role, house_code, password_hash, phone, email, is_active, created_at, updated_at)
     VALUES (?, ?, ?, 'admin', NULL, ?, '08123456789', 'bendahara@paradessa.id', 1, ?, ?)
   `).run(adminId, 'bendahara', 'Rizqi Ahmad Fauzi (Bendahara)', adminPassHash, now, now);
@@ -104,9 +104,8 @@ export function seedDefaultUsers(db = getDb()): void {
   // 2. Sample Warga account (Blok A1)
   const wargaId = 'USR-WARGA-A1';
   const wargaPassHash = hashPassword('warga2026');
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO users (id, username, name, role, house_code, password_hash, phone, email, is_active, created_at, updated_at)
     VALUES (?, ?, ?, 'warga', 'A1', ?, '08129876543', 'eko.a1@paradessa.id', 1, ?, ?)
   `).run(wargaId, 'warga', 'Eko (Warga Blok A1)', wargaPassHash, now, now);
 }
-

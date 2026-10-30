@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const year = parseInt(searchParams.get('year') || String(now.getFullYear()), 10);
     const month = parseInt(searchParams.get('month') || String(now.getMonth() + 1), 10);
 
-    const reportData = generateMonthlyReportData(year, month, db);
+    const reportData = await generateMonthlyReportData(year, month, db);
     const whatsAppText = generateWhatsAppReportSummary(reportData);
 
     return NextResponse.json({
@@ -36,10 +36,10 @@ export async function POST(request: Request) {
     }
 
     const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
-    const reportData = generateMonthlyReportData(year, month, db);
+    const reportData = await generateMonthlyReportData(year, month, db);
 
     if (action === 'publish' || action === 'lock') {
-      db.prepare(`
+      await db.prepare(`
         INSERT INTO month_locks (id, year_month, status, locked_by, locked_at, closing_balance_at_lock, notes, created_at)
         VALUES (?, ?, 'terkunci', 'Bendahara', datetime('now'), ?, ?, datetime('now'))
         ON CONFLICT(year_month) DO UPDATE SET
@@ -50,20 +50,20 @@ export async function POST(request: Request) {
           notes = excluded.notes
       `).run(`LOCK-${yearMonth}`, yearMonth, reportData.summary.saldoAkhir, notes || 'Laporan bulanan telah dipublikasikan');
 
-      recordAuditLog('Bendahara', 'LOCK', 'month_report', yearMonth, null, {
+      await recordAuditLog('Bendahara', 'LOCK', 'month_report', yearMonth, null, {
         status: 'terkunci',
         closingBalance: reportData.summary.saldoAkhir,
-      });
+      }, db);
 
       return NextResponse.json({ success: true, message: `Laporan ${yearMonth} berhasil dipublikasikan dan dikunci.`, isLocked: true });
     } else if (action === 'unlock') {
-      db.prepare(`
+      await db.prepare(`
         UPDATE month_locks
         SET status = 'draft', locked_by = NULL, locked_at = NULL
         WHERE year_month = ?
       `).run(yearMonth);
 
-      recordAuditLog('Bendahara', 'UNLOCK', 'month_report', yearMonth, { status: 'terkunci' }, { status: 'draft' });
+      await recordAuditLog('Bendahara', 'UNLOCK', 'month_report', yearMonth, { status: 'terkunci' }, { status: 'draft' }, db);
 
       return NextResponse.json({ success: true, message: `Kunci laporan ${yearMonth} telah dibuka. Transaksi dapat diubah.`, isLocked: false });
     }
