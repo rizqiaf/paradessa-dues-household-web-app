@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { RoleProvider } from '@/context/RoleContext';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Paradessa Household Dues',
@@ -40,7 +41,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#fbfbfa] text-stone-900 antialiased font-sans">
         <RoleProvider>
           <Navbar />
-          <main className="flex-1 pb-28 sm:pb-24 lg:pb-10">{children}</main>
+          <main className="flex-1 pb-16 sm:pb-12 lg:pb-8">{children}</main>
+          <Footer />
         </RoleProvider>
       </body>
     </html>
