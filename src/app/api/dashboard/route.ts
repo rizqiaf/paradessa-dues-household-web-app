@@ -10,15 +10,35 @@ export async function GET(request: Request) {
     const db = getDb();
     const { searchParams } = new URL(request.url);
     const now = new Date();
-    const year = parseInt(searchParams.get('year') || String(now.getFullYear()), 10);
-    const month = parseInt(searchParams.get('month') || String(now.getMonth() + 1), 10);
 
-    // Current month ledger
+    // Default to the latest transaction month in the database or today's date
+    const latestTxRow = (await db.prepare(`
+      SELECT max(date) as max_date FROM (
+        SELECT date FROM payments
+        UNION ALL
+        SELECT date FROM expenses
+      )
+    `).get()) as { max_date: string | null } | undefined;
+
+    const defaultYearMonth = latestTxRow?.max_date ? latestTxRow.max_date.slice(0, 7) : now.toISOString().slice(0, 7);
+    const [defY, defM] = defaultYearMonth.split('-').map(Number);
+
+    const year = parseInt(searchParams.get('year') || String(defY), 10);
+    const month = parseInt(searchParams.get('month') || String(defM), 10);
+
+    // Current month ledger (calculates opening, masuk, keluar, and closing balance)
     const currentMonthLedger = await getMonthLedger(year, month, undefined, db);
 
-    // Current cash balance across all transactions to date for selected year
+    // Current cash balance across all transactions up to end of this month
     const allLedger = await getYearLedgerSummary(year, db);
     const currentBalance = currentMonthLedger.closing_balance;
+
+    // Transaction counts and last transaction in this month
+    const masukTxs = currentMonthLedger.items.filter((t) => t.type === 'masuk');
+    const keluarTxs = currentMonthLedger.items.filter((t) => t.type === 'keluar');
+    const lastTx = currentMonthLedger.items.length > 0
+      ? currentMonthLedger.items[currentMonthLedger.items.length - 1]
+      : null;
 
     // Collection rate & Arrears for this month
     const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
@@ -113,8 +133,18 @@ export async function GET(request: Request) {
         monthName: currentMonthLedger.month_name,
         pemasukan: currentMonthLedger.total_masuk,
         pengeluaran: currentMonthLedger.total_keluar,
+        pemasukanCount: masukTxs.length,
+        pengeluaranCount: keluarTxs.length,
         saldoAwal: currentMonthLedger.opening_balance,
         saldoAkhir: currentMonthLedger.closing_balance,
+        lastTransaction: lastTx
+          ? {
+              date: lastTx.date,
+              description: lastTx.description,
+              type: lastTx.type,
+              amount: lastTx.type === 'masuk' ? lastTx.masuk : lastTx.keluar,
+            }
+          : null,
         collectionRate: {
           billed: totalBilled,
           paid: totalPaid,

@@ -85,7 +85,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-3">
             {/* Brand Logo & Cluster Name */}
-            <Link href="/" className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 mr-1 sm:mr-0 group">
+            <Link href="/" prefetch={false} className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 mr-1 sm:mr-0 group">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border border-stone-200/90 p-1 sm:p-1.5 flex items-center justify-center shadow-xs shrink-0 group-hover:border-orange-400 group-hover:shadow-sm transition-all">
                 <img
                   src="/images/paradessa-emblem.png"
@@ -116,6 +116,7 @@ export default function Navbar() {
                       <Link
                         key={item.href}
                         href={item.href}
+                        prefetch={false}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                           isActive
                             ? 'bg-orange-50 text-orange-600 shadow-sm'

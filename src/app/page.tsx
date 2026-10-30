@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   Wallet,
   TrendingUp,
@@ -58,6 +59,8 @@ export default function DashboardPage() {
     }
   }, [currentYear, currentMonth]);
 
+  const pathname = usePathname();
+
   useEffect(() => {
     loadDashboard(false);
 
@@ -71,11 +74,18 @@ export default function DashboardPage() {
 
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibility);
+
+    // Live auto-refresh polling every 8s to guarantee latest transactions are always rendered
+    const interval = setInterval(() => {
+      loadDashboard(false);
+    }, 8000);
+
     return () => {
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibility);
+      clearInterval(interval);
     };
-  }, [loadDashboard]);
+  }, [loadDashboard, pathname]);
 
   if (loading) {
     return (
@@ -171,7 +181,7 @@ export default function DashboardPage() {
           <div className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 tracking-tight">
             {formatRupiah(currentBalance)}
           </div>
-          <div className="mt-2 text-xs text-stone-500 flex items-center gap-1.5 font-medium">
+          <div className="mt-2 text-xs text-stone-500 flex items-center justify-between gap-1.5 font-medium">
             <span className="text-stone-400">Saldo Awal Bulan:</span>
             <span className="font-bold text-stone-700">{formatRupiah(thisMonth.saldoAwal)}</span>
           </div>
@@ -190,7 +200,11 @@ export default function DashboardPage() {
           </div>
           <div className="mt-2 text-xs text-emerald-700 flex items-center gap-1 font-semibold">
             <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>Iuran warga & kas masuk</span>
+            <span>
+              {thisMonth.pemasukanCount !== undefined
+                ? `${thisMonth.pemasukanCount} penerimaan iuran tercatat`
+                : 'Iuran warga & kas masuk'}
+            </span>
           </div>
         </div>
 
@@ -207,7 +221,11 @@ export default function DashboardPage() {
           </div>
           <div className="mt-2 text-xs text-rose-700 flex items-center gap-1 font-semibold">
             <ArrowDownRight className="w-3.5 h-3.5" />
-            <span>Listrik, sampah, perbaikan</span>
+            <span>
+              {thisMonth.pengeluaranCount !== undefined
+                ? `${thisMonth.pengeluaranCount} pengeluaran operasional`
+                : 'Listrik, sampah, perbaikan'}
+            </span>
           </div>
         </div>
 
@@ -235,6 +253,26 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Last Transaction Live Indicator */}
+      {thisMonth.lastTransaction && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-2.5 rounded-2xl bg-white border border-stone-200/90 shadow-[0_1px_4px_rgba(0,0,0,0.02)] gap-2 text-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="shrink-0 px-2.5 py-0.5 rounded-lg bg-orange-100 text-orange-800 text-[10px] font-black uppercase tracking-wider border border-orange-200">
+              Transaksi Terakhir {thisMonth.monthName}
+            </span>
+            <span className="font-semibold text-stone-800 truncate">
+              {thisMonth.lastTransaction.date} • {thisMonth.lastTransaction.description}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
+            <span className="text-stone-400 text-[11px]">Nominal:</span>
+            <span className={`font-black text-xs ${thisMonth.lastTransaction.type === 'masuk' ? 'text-emerald-600' : 'text-rose-600'}`}>
+              {thisMonth.lastTransaction.type === 'masuk' ? '+' : '-'}{formatRupiah(thisMonth.lastTransaction.amount)}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Main Grid: 12-Month Bar Chart & Arrears Watchlist */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
