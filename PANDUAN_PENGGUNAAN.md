@@ -15,6 +15,11 @@ Sistem dilengkapi dengan autentikasi berbasis peran (*role-based access control*
 | **Pengurus / Bendahara** *(Admin)* | `bendahara` | `08123456789`<br>`bendahara@paradessa.id` | `paradessa2026` | **Akses Penuh**: Catat Penerimaan Iuran, Catat Pengeluaran, Edit & Hapus Transaksi Buku Kas, Buat/Kunci Laporan Resmi, Manajemen Rumah & Warga, Kelola Talangan, Ubah Tarif Iuran, Tambah/Edit Akun Pengguna. |
 | **Warga (Contoh: Blok A1)** *(Resident)* | `warga` | `08129876543`<br>`eko.a1@paradessa.id` | `warga2026` | **Akses Warga**: Melihat transparansi Buku Kas, mengecek status & histori iuran rumah sendiri, melihat rekap iuran dan laporan keuangan bulanan. |
 
+### Susunan Pengurus Paguyuban Paradessa Habitat
+- **Rizqi Ahmad Fauzi** — Bendahara Kas Paradessa (Unit: Blok A18)
+- **Yanwar Yusuf Rukmana** — Pengurus Paguyuban (Unit: Blok A5)
+- **Eko Agung Prabowo** — Pengurus Paguyuban (Unit: Blok A1)
+
 > **Tips Keamanan:**
 > - Pengurus/Bendahara dapat menambahkan akun warga baru atau mengubah kata sandi melalui menu **Menu Lainnya > Pengguna** (`/pengguna`).
 > - Field username saat login bersifat fleksibel: dapat diisi dengan **Username**, **Nomor WhatsApp**, maupun **Alamat Email** yang terdaftar.

@@ -25,12 +25,19 @@ import {
   LogOut,
   User,
   ShieldCheck,
+  Sun,
+  Moon,
+  Globe,
 } from 'lucide-react';
 import { useRole } from '@/context/RoleContext';
+import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Navbar() {
   const pathname = usePathname();
   const { user, role, setRole, selectedHouseCode, setSelectedHouseCode, isAdmin, logout } = useRole();
+  const { theme, toggleTheme, isDark } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -48,27 +55,27 @@ export default function Navbar() {
 
   // Primary desktop navigation links
   const primaryNavItems = [
-    { label: 'Beranda', href: '/', icon: Home },
-    { label: 'Buku Kas', href: '/buku-kas', icon: BookOpen },
-    { label: 'Rekap Iuran', href: '/rekap-iuran', icon: CalendarCheck },
-    { label: 'Laporan', href: '/laporan', icon: FileText },
-    { label: 'Rumah & Warga', href: '/rumah', icon: Building },
+    { label: t('nav.dashboard'), href: '/', icon: Home },
+    { label: t('nav.ledger'), href: '/buku-kas', icon: BookOpen },
+    { label: t('nav.dues'), href: '/rekap-iuran', icon: CalendarCheck },
+    { label: t('nav.reports'), href: '/laporan', icon: FileText },
+    { label: t('nav.houses'), href: '/rumah', icon: Building },
   ];
 
   // Secondary items placed inside clean dropdown to prevent header wrapping
   const secondaryNavItems = [
-    { label: 'Kelola Pengguna', href: '/pengguna', icon: Users, desc: 'Manajemen akun bendahara & warga' },
-    { label: 'Rekap Sampah', href: '/rekap-sampah', icon: Trash2, desc: 'Iuran & bayar ke Pak Udin' },
-    { label: 'Talangan / Kasbon', href: '/talangan', icon: Coins, desc: 'Kompensasi dana warga' },
-    { label: 'Alat Impor Excel', href: '/import', icon: Upload, desc: 'Impor & rekonsiliasi master sheet' },
-    { label: 'Pengaturan Sistem', href: '/pengaturan', icon: Settings, desc: 'Tarif, kunci bulan, audit log' },
+    { label: t('nav.users'), href: '/pengguna', icon: Users, desc: t('nav.users_desc') },
+    { label: t('nav.garbage'), href: '/rekap-sampah', icon: Trash2, desc: t('nav.garbage_desc') },
+    { label: t('nav.advances'), href: '/talangan', icon: Coins, desc: t('nav.advances_desc') },
+    { label: t('nav.import'), href: '/import', icon: Upload, desc: t('nav.import_desc') },
+    { label: t('nav.settings'), href: '/pengaturan', icon: Settings, desc: t('nav.settings_desc') },
   ];
 
   const wargaNavItems = [
-    { label: 'Beranda', href: '/', icon: Home },
-    { label: `Iuran Rumah Blok ${selectedHouseCode}`, href: `/rumah/${selectedHouseCode}`, icon: Building },
-    { label: 'Laporan Publik', href: '/laporan', icon: FileText },
-    { label: 'Buku Kas Warga', href: '/buku-kas', icon: BookOpen },
+    { label: t('nav.dashboard'), href: '/', icon: Home },
+    { label: `${language === 'en' ? 'House' : 'Iuran Rumah'} Blok ${selectedHouseCode}`, href: `/rumah/${selectedHouseCode}`, icon: Building },
+    { label: language === 'en' ? 'Public Reports' : 'Laporan Publik', href: '/laporan', icon: FileText },
+    { label: language === 'en' ? 'Resident Ledger' : 'Buku Kas Warga', href: '/buku-kas', icon: BookOpen },
   ];
 
   const isSecondaryActive = secondaryNavItems.some((item) => pathname === item.href);
@@ -140,14 +147,14 @@ export default function Navbar() {
                           : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
                       }`}
                     >
-                      <span>Menu Lainnya</span>
+                      <span>{t('nav.more')}</span>
                       <ChevronDown className={`w-3.5 h-3.5 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     {dropdownOpen && (
                       <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-stone-200/90 py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
                         <div className="px-3 py-1.5 text-[10px] font-bold text-stone-400 uppercase tracking-wider border-b border-stone-100 mb-1">
-                          Alat Tambahan & Pengaturan
+                          {language === 'en' ? 'Additional Tools & Settings' : 'Alat Tambahan & Pengaturan'}
                         </div>
                         {secondaryNavItems.map((item) => {
                           const Icon = item.icon;
@@ -197,24 +204,50 @@ export default function Navbar() {
               )}
             </nav>
 
-            {/* Right Controls: User Pill & Quick Action Buttons */}
+            {/* Right Controls: Theme, Language, Actions, & User Pill */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* Language Switch Button (ID / EN) */}
+              <button
+                type="button"
+                onClick={toggleLanguage}
+                title={t('lang.switch')}
+                className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs border border-stone-200/90 transition-all cursor-pointer"
+              >
+                <Globe className="w-3.5 h-3.5 text-stone-500" />
+                <span className="text-[11px] font-black uppercase tracking-wider">{language}</span>
+              </button>
+
+              {/* Dark Mode Toggle Button */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                title={isDark ? t('theme.toggle_light') : t('theme.toggle_dark')}
+                className="p-1.5 sm:p-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200/90 transition-all cursor-pointer"
+                aria-label="Toggle dark mode"
+              >
+                {isDark ? (
+                  <Sun className="w-4 h-4 text-amber-500 animate-in spin-in-180 duration-200" />
+                ) : (
+                  <Moon className="w-4 h-4 text-stone-600 animate-in spin-in-180 duration-200" />
+                )}
+              </button>
+
               {/* Quick Transaction Action for Bendahara on Desktop */}
               {isAdmin && (
-                <div className="hidden sm:flex items-center gap-1.5 mr-1">
+                <div className="hidden sm:flex items-center gap-1.5 ml-0.5 mr-1">
                   <Link
                     href="/pembayaran"
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-sm shadow-orange-600/20 transition-all cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>Catat Bayar</span>
+                    <span>{t('nav.pay')}</span>
                   </Link>
                   <Link
                     href="/pengeluaran"
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs border border-stone-200 transition-colors cursor-pointer"
                   >
                     <Receipt className="w-3.5 h-3.5 text-stone-500" />
-                    <span>Pengeluaran</span>
+                    <span>{t('nav.expense')}</span>
                   </Link>
                 </div>
               )}
@@ -241,7 +274,7 @@ export default function Navbar() {
                   <button
                     type="button"
                     onClick={logout}
-                    title="Keluar (Logout)"
+                    title={t('nav.logout')}
                     className="hidden sm:inline-flex p-1 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-white transition-colors cursor-pointer ml-1"
                   >
                     <LogOut className="w-3.5 h-3.5" />
@@ -272,6 +305,26 @@ export default function Navbar() {
         {/* Mobile Full Drawer Dropdown */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-white/98 backdrop-blur-xl border-b border-stone-200 px-4 pt-3 pb-6 space-y-4 shadow-xl max-h-[85vh] overflow-y-auto animate-fade-in">
+            {/* Quick Settings: Theme & Language on Mobile */}
+            <div className="grid grid-cols-2 gap-2 p-2 bg-stone-50 rounded-2xl border border-stone-200/80">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-white border border-stone-200 text-stone-700 font-bold text-xs"
+              >
+                {isDark ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-stone-600" />}
+                <span>{isDark ? 'Mode Terang' : 'Mode Gelap'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={toggleLanguage}
+                className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-white border border-stone-200 text-stone-700 font-bold text-xs"
+              >
+                <Globe className="w-4 h-4 text-orange-600" />
+                <span className="uppercase">{language === 'id' ? 'English (EN)' : 'Indonesia (ID)'}</span>
+              </button>
+            </div>
+
             {/* User Profile on Mobile */}
             {user && (
               <div className="flex items-center justify-between p-3 bg-stone-50 border border-stone-200 rounded-2xl text-xs">

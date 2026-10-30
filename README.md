@@ -113,4 +113,9 @@ Untuk masuk ke aplikasi pada halaman `/login`:
 | **Bendahara (Admin)** | `bendahara` | `08123456789`<br>`bendahara@paradessa.id` | `paradessa2026` |
 | **Warga (Blok A1)** | `warga` | `08129876543`<br>`eko.a1@paradessa.id` | `warga2026` |
 
+### Pengurus Paguyuban Paradessa Habitat
+- **Rizqi Ahmad Fauzi** — Bendahara Kas Paradessa (Unit: Blok A18)
+- **Yanwar Yusuf Rukmana** — Pengurus Paguyuban (Unit: Blok A5)
+- **Eko Agung Prabowo** — Pengurus Paguyuban (Unit: Blok A1)
+
 Panduan lengkap penggunaan fitur dan alur kerja aplikasi tersedia di [PANDUAN_PENGGUNAAN.md](file:///home/rizqi537/paradessa_habitat_ledge_app/PANDUAN_PENGGUNAAN.md).

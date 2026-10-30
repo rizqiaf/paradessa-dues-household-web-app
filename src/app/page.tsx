@@ -25,9 +25,11 @@ import {
 } from 'lucide-react';
 import { formatRupiah, formatBulanTahun } from '@/lib/format';
 import { useRole } from '@/context/RoleContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function DashboardPage() {
   const { role, selectedHouseCode, isAdmin } = useRole();
+  const { language, t } = useLanguage();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -112,17 +114,17 @@ export default function DashboardPage() {
           <div className="space-y-1.5 sm:space-y-2">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-100/80 border border-orange-200 text-[11px] sm:text-xs font-bold text-orange-700">
               <Sparkles className="w-3.5 h-3.5 text-orange-600" />
-              <span>Paradessa Household Dues</span>
+              <span>{t('dash.badge')}</span>
             </div>
             <h1 className="text-xl sm:text-3xl lg:text-4xl font-black text-stone-950 tracking-tight leading-tight">
-              Buku Kas & Iuran Paradessa Habitat
+              {t('dash.title')}
             </h1>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-600">
-              <span>Jl. Desa Banda Asri RT.02/RW.09, Desa Pananjung, Kec. Cangkuang, Kab. Bandung 40238</span>
+              <span>{t('dash.address')}</span>
               {lastUpdated && (
                 <span className="inline-flex items-center gap-1 text-[11px] text-stone-400 font-medium bg-stone-100/80 px-2 py-0.5 rounded-md">
                   <Clock className="w-3 h-3 text-stone-400" />
-                  <span>Diperbarui: {lastUpdated}</span>
+                  <span>{language === 'en' ? 'Updated:' : 'Diperbarui:'} {lastUpdated}</span>
                 </span>
               )}
             </div>
@@ -135,25 +137,25 @@ export default function DashboardPage() {
                 type="button"
                 onClick={() => loadDashboard(true)}
                 disabled={refreshing}
-                title="Muat ulang data kas terbaru langsung dari server"
+                title={language === 'en' ? 'Reload latest cash data directly from server' : 'Muat ulang data kas terbaru langsung dari server'}
                 className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs sm:text-sm border border-stone-200/90 shadow-xs active:scale-[0.98] transition-all disabled:opacity-60 cursor-pointer"
               >
                 <RotateCcw className={`w-3.5 h-3.5 text-stone-500 ${refreshing ? 'animate-spin text-orange-600' : ''}`} />
-                <span>{refreshing ? 'Memuat...' : 'Segarkan'}</span>
+                <span>{refreshing ? (language === 'en' ? 'Loading...' : 'Memuat...') : (language === 'en' ? 'Refresh' : 'Segarkan')}</span>
               </button>
               <Link
                 href="/pembayaran"
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-orange-500/25 active:scale-[0.98] transition-all"
               >
                 <Plus className="w-4 h-4 stroke-[2.5]" />
-                <span>Catat Pembayaran</span>
+                <span>{t('dash.btn_pay')}</span>
               </Link>
               <Link
                 href="/pengeluaran"
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl bg-white hover:bg-stone-50 text-stone-800 font-bold text-xs sm:text-sm border border-stone-200/90 shadow-xs active:scale-[0.98] transition-all"
               >
                 <TrendingDown className="w-4 h-4 text-rose-500" />
-                <span>Catat Pengeluaran</span>
+                <span>{t('dash.btn_expense')}</span>
               </Link>
             </div>
           ) : (
@@ -162,7 +164,7 @@ export default function DashboardPage() {
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-orange-500/25 transition-all"
             >
               <Building className="w-4 h-4" />
-              <span>Status Rumah Blok {selectedHouseCode}</span>
+              <span>{language === 'en' ? `House Status Unit ${selectedHouseCode}` : `Status Rumah Blok ${selectedHouseCode}`}</span>
             </Link>
           )}
         </div>
@@ -173,7 +175,7 @@ export default function DashboardPage() {
         {/* Total Cash Balance */}
         <div className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-orange-200 transition-colors">
           <div className="flex items-center justify-between text-stone-500 mb-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">Saldo Kas Saat Ini</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{t('dash.balance')}</span>
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-orange-50 border border-orange-200/70 flex items-center justify-center text-orange-600">
               <Wallet className="w-4 h-4" />
             </div>
@@ -182,7 +184,7 @@ export default function DashboardPage() {
             {formatRupiah(currentBalance)}
           </div>
           <div className="mt-2 text-xs text-stone-500 flex items-center justify-between gap-1.5 font-medium">
-            <span className="text-stone-400">Saldo Awal Bulan:</span>
+            <span className="text-stone-400">{t('dash.opening')}:</span>
             <span className="font-bold text-stone-700">{formatRupiah(thisMonth.saldoAwal)}</span>
           </div>
         </div>
@@ -190,7 +192,7 @@ export default function DashboardPage() {
         {/* This Month's Income */}
         <div className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-emerald-200 transition-colors">
           <div className="flex items-center justify-between text-stone-500 mb-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">Pemasukan {thisMonth.monthName}</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{t('dash.income')} {thisMonth.monthName}</span>
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600">
               <TrendingUp className="w-4 h-4" />
             </div>
@@ -202,8 +204,8 @@ export default function DashboardPage() {
             <ArrowUpRight className="w-3.5 h-3.5" />
             <span>
               {thisMonth.pemasukanCount !== undefined
-                ? `${thisMonth.pemasukanCount} penerimaan iuran tercatat`
-                : 'Iuran warga & kas masuk'}
+                ? (language === 'en' ? `${thisMonth.pemasukanCount} dues receipts recorded` : `${thisMonth.pemasukanCount} penerimaan iuran tercatat`)
+                : t('dash.income_sub')}
             </span>
           </div>
         </div>
@@ -211,7 +213,7 @@ export default function DashboardPage() {
         {/* This Month's Expenses */}
         <div className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-rose-200 transition-colors">
           <div className="flex items-center justify-between text-stone-500 mb-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">Pengeluaran {thisMonth.monthName}</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{t('dash.expense')} {thisMonth.monthName}</span>
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-rose-50 border border-rose-200/70 flex items-center justify-center text-rose-600">
               <TrendingDown className="w-4 h-4" />
             </div>
@@ -223,8 +225,8 @@ export default function DashboardPage() {
             <ArrowDownRight className="w-3.5 h-3.5" />
             <span>
               {thisMonth.pengeluaranCount !== undefined
-                ? `${thisMonth.pengeluaranCount} pengeluaran operasional`
-                : 'Listrik, sampah, perbaikan'}
+                ? (language === 'en' ? `${thisMonth.pengeluaranCount} operational expenses` : `${thisMonth.pengeluaranCount} pengeluaran operasional`)
+                : t('dash.expense_sub')}
             </span>
           </div>
         </div>
@@ -232,7 +234,7 @@ export default function DashboardPage() {
         {/* Collection Rate */}
         <div className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-amber-200 transition-colors">
           <div className="flex items-center justify-between text-stone-500 mb-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">Tingkat Penagihan</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{t('dash.rate')}</span>
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 border border-amber-200/70 flex items-center justify-center text-amber-600">
               <PieChart className="w-4 h-4" />
             </div>
@@ -242,7 +244,7 @@ export default function DashboardPage() {
               {collectionRate.percentage}%
             </span>
             <span className="text-xs text-stone-500 font-medium">
-              ({collectionRate.paid} / {collectionRate.billed} rumah)
+              ({collectionRate.paid} / {collectionRate.billed} {t('dash.houses_unit')})
             </span>
           </div>
           <div className="w-full bg-stone-100 h-2.5 rounded-full mt-2.5 overflow-hidden">
@@ -282,18 +284,18 @@ export default function DashboardPage() {
             <div>
               <h2 className="text-sm sm:text-base font-extrabold text-stone-900 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-orange-600 shrink-0" />
-                <span>Tren Arus Kas 12 Bulan ({currentYear})</span>
+                <span>{t('dash.chart_title')}</span>
               </h2>
-              <p className="text-[11px] sm:text-xs text-stone-500 mt-0.5">Perbandingan pemasukan vs pengeluaran kas riil per bulan</p>
+              <p className="text-[11px] sm:text-xs text-stone-500 mt-0.5">{t('dash.chart_sub')}</p>
             </div>
             <div className="flex items-center gap-3 sm:gap-4 text-xs font-semibold">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded bg-emerald-500"></div>
-                <span className="text-stone-700 text-xs">Pemasukan</span>
+                <span className="text-stone-700 text-xs">{t('dash.in')}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded bg-rose-500"></div>
-                <span className="text-stone-700 text-xs">Pengeluaran</span>
+                <span className="text-stone-700 text-xs">{t('dash.out')}</span>
               </div>
             </div>
           </div>
@@ -399,9 +401,9 @@ export default function DashboardPage() {
           })()}
 
           <div className="flex items-center justify-between text-xs text-stone-500 pt-1 border-t border-stone-100">
-            <span>Data bersumber dari buku kas kontinyu Paradessa.</span>
+            <span>{t('dash.source_info')}</span>
             <Link href="/buku-kas" className="text-orange-600 hover:text-orange-700 font-bold flex items-center gap-1">
-              <span>Buka Buku Kas Lengkap</span>
+              <span>{t('dash.view_ledger')}</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -413,20 +415,20 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-base font-extrabold text-stone-900 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-orange-600" />
-                <span>Daftar Tunggakan Iuran</span>
+                <span>{t('dash.arrears_title')}</span>
               </h2>
               <span className="text-xs font-bold text-orange-700 bg-orange-100/80 px-2.5 py-0.5 rounded-full border border-orange-200">
-                {arrears.length} Rumah
+                {arrears.length} {t('dash.houses_unit')}
               </span>
             </div>
-            <p className="text-xs text-stone-500 mb-4">Rumah yang memiliki tagihan belum lunas</p>
+            <p className="text-xs text-stone-500 mb-4">{language === 'en' ? 'Houses with outstanding unpaid dues' : 'Rumah yang memiliki tagihan belum lunas'}</p>
 
             <div className="overflow-y-auto max-h-[360px] space-y-2 pr-1">
               {arrears.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-center p-8 text-stone-400">
                   <CheckCircle2 className="w-10 h-10 text-emerald-500 mb-2" />
-                  <p className="text-sm font-bold text-stone-700">Semua Iuran Lunas!</p>
-                  <p className="text-xs text-stone-400 mt-1">Tidak ada tunggakan iuran tercatat.</p>
+                  <p className="text-sm font-bold text-stone-700">{t('dash.all_paid')}</p>
+                  <p className="text-xs text-stone-400 mt-1">{t('dash.no_arrears')}</p>
                 </div>
               ) : (
                 arrears.map((item: any, idx: number) => (
@@ -466,7 +468,7 @@ export default function DashboardPage() {
               href="/rekap-iuran"
               className="w-full py-2.5 flex items-center justify-center text-xs font-bold text-orange-700 hover:text-orange-800 bg-orange-50 hover:bg-orange-100/80 border border-orange-200 rounded-xl transition-colors"
             >
-              <span>Buka Matriks Rekap Iuran Lengkap</span>
+              <span>{t('dash.view_matrix')}</span>
             </Link>
           </div>
         </div>
