@@ -4,8 +4,8 @@
   "description": "Aplikasi Pengelolaan Iuran Warga dan Buku Kas Paradessa Habitat",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0284c7",
+  "background_color": "#ffffff",
+  "theme_color": "#ea580c",
   "icons": [
     {
       "src": "/icons/icon-192.png",

@@ -8,8 +8,13 @@ export const metadata: Metadata = {
   description: 'Aplikasi Pengelolaan Iuran Warga & Buku Kas Komunitas Paradessa Habitat, Desa Pananjung, Cangkuang, Kab. Bandung',
   manifest: '/manifest.json',
   icons: {
-    icon: '/icons/icon.svg',
-    apple: '/icons/icon.svg',
+    icon: [
+      { url: '/images/paradessa-emblem.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.ico' },
+    ],
+    apple: [
+      { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
   appleWebApp: {
     capable: true,
