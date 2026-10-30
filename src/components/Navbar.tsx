@@ -88,32 +88,32 @@ export default function Navbar() {
   return (
     <>
       {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-3">
-            {/* Brand Logo & Cluster Name */}
-            <Link href="/" prefetch={false} className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 mr-1 sm:mr-0 group">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border border-stone-200/90 p-1 sm:p-1.5 flex items-center justify-center shadow-xs shrink-0 group-hover:border-orange-400 group-hover:shadow-sm transition-all">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#12141a]/95 backdrop-blur-md border-b border-stone-200/80 dark:border-stone-800 shadow-[0_1px_3px_rgba(0,0,0,0.03)] w-full">
+        <div className="w-full px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
+            {/* Brand Logo & Cluster Name - Ujung Kiri (Far Left) */}
+            <Link href="/" prefetch={false} className="flex items-center gap-2.5 sm:gap-3 shrink-0 group">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white dark:bg-stone-900 border border-stone-200/90 dark:border-stone-700 p-1 sm:p-1.5 flex items-center justify-center shadow-xs shrink-0 group-hover:border-orange-400 group-hover:shadow-sm transition-all">
                 <img
                   src="/images/paradessa-emblem.png"
                   alt="Paradessa Habitat"
                   className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                 />
               </div>
-              <div className="flex flex-col min-w-0">
-                <span className="font-extrabold text-stone-950 text-sm sm:text-base tracking-tight leading-tight truncate group-hover:text-orange-600 transition-colors">
+              <div className="flex flex-col">
+                <span className="font-extrabold text-stone-950 dark:text-white text-sm sm:text-base tracking-tight leading-tight whitespace-nowrap group-hover:text-orange-600 transition-colors">
                   Paradessa Household Dues
                 </span>
-                <div className="text-[10px] sm:text-[11px] text-stone-500 flex items-center gap-1 font-medium leading-none mt-0.5">
-                  <span className="text-orange-600 font-bold truncate">Paradessa Habitat</span>
-                  <span className="hidden sm:inline w-1 h-1 rounded-full bg-stone-300 shrink-0"></span>
-                  <span className="hidden sm:inline truncate text-stone-400">Pananjung, Cangkuang</span>
+                <div className="text-[10px] sm:text-[11px] text-stone-500 dark:text-stone-400 flex items-center gap-1 font-medium leading-none mt-0.5">
+                  <span className="text-orange-600 dark:text-orange-400 font-bold whitespace-nowrap">Paradessa Habitat</span>
+                  <span className="hidden sm:inline w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-600 shrink-0"></span>
+                  <span className="hidden sm:inline whitespace-nowrap text-stone-400 dark:text-stone-500">Pananjung, Cangkuang</span>
                 </div>
               </div>
             </Link>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center space-x-1">
+            <nav className="hidden lg:flex items-center space-x-1 mx-2">
               {isAdmin ? (
                 <>
                   {primaryNavItems.map((item) => {
