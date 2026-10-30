@@ -101,3 +101,16 @@ Untuk deployment cloud di Vercel:
 Tambahkan Environment Variables di **Vercel Project Settings > Environment Variables**:
 - `TURSO_DATABASE_URL`: URL database Turso (contoh: `libsql://paradessa-db-rizqi537.aws-ap-southeast-1.turso.io`)
 - `TURSO_AUTH_TOKEN`: Token autentikasi database Turso
+
+---
+
+## Akun Pengguna Bawaan (Default Credentials)
+
+Untuk masuk ke aplikasi pada halaman `/login`:
+
+| Peran (Role) | Username / ID | Alternatif (WA / Email) | Password |
+| :--- | :--- | :--- | :--- |
+| **Bendahara (Admin)** | `bendahara` | `08123456789`<br>`bendahara@paradessa.id` | `paradessa2026` |
+| **Warga (Blok A1)** | `warga` | `08129876543`<br>`eko.a1@paradessa.id` | `warga2026` |
+
+Panduan lengkap penggunaan fitur dan alur kerja aplikasi tersedia di [PANDUAN_PENGGUNAAN.md](file:///home/rizqi537/paradessa_habitat_ledge_app/PANDUAN_PENGGUNAAN.md).
