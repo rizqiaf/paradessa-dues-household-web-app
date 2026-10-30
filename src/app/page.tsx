@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Wallet,
@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Plus,
   BookOpen,
+  RotateCcw,
 } from 'lucide-react';
 import { formatRupiah, formatBulanTahun } from '@/lib/format';
 import { useRole } from '@/context/RoleContext';
@@ -28,20 +29,53 @@ export default function DashboardPage() {
   const { role, selectedHouseCode, isAdmin } = useRole();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
 
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
 
-  useEffect(() => {
-    fetch(`/api/dashboard?year=${currentYear}&month=${currentMonth}`)
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.success) setData(json);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+  const loadDashboard = useCallback(async (isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setRefreshing(true);
+    }
+    try {
+      const res = await fetch(`/api/dashboard?year=${currentYear}&month=${currentMonth}&_t=${Date.now()}`, {
+        cache: 'no-store',
+      });
+      const json = await res.json();
+      if (json.success) {
+        setData(json);
+        const updateTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        setLastUpdated(`${updateTime} WIB`);
+      }
+    } catch (err) {
+      console.error('Failed to load dashboard:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, [currentYear, currentMonth]);
+
+  useEffect(() => {
+    loadDashboard(false);
+
+    // Auto-refresh when tab / browser window becomes active again
+    const handleFocus = () => loadDashboard(false);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        loadDashboard(false);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [loadDashboard]);
 
   if (loading) {
     return (
@@ -73,14 +107,30 @@ export default function DashboardPage() {
             <h1 className="text-xl sm:text-3xl lg:text-4xl font-black text-stone-950 tracking-tight leading-tight">
               Buku Kas & Iuran Paradessa Habitat
             </h1>
-            <p className="text-xs sm:text-sm text-stone-600 max-w-2xl font-normal leading-relaxed">
-              Jl. Desa Banda Asri RT.02/RW.09, Desa Pananjung, Kec. Cangkuang, Kab. Bandung 40238
-            </p>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-600">
+              <span>Jl. Desa Banda Asri RT.02/RW.09, Desa Pananjung, Kec. Cangkuang, Kab. Bandung 40238</span>
+              {lastUpdated && (
+                <span className="inline-flex items-center gap-1 text-[11px] text-stone-400 font-medium bg-stone-100/80 px-2 py-0.5 rounded-md">
+                  <Clock className="w-3 h-3 text-stone-400" />
+                  <span>Diperbarui: {lastUpdated}</span>
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Quick Action Buttons for Bendahara */}
           {isAdmin ? (
             <div className="grid grid-cols-1 sm:flex sm:flex-wrap sm:items-center gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
+              <button
+                type="button"
+                onClick={() => loadDashboard(true)}
+                disabled={refreshing}
+                title="Muat ulang data kas terbaru langsung dari server"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs sm:text-sm border border-stone-200/90 shadow-xs active:scale-[0.98] transition-all disabled:opacity-60 cursor-pointer"
+              >
+                <RotateCcw className={`w-3.5 h-3.5 text-stone-500 ${refreshing ? 'animate-spin text-orange-600' : ''}`} />
+                <span>{refreshing ? 'Memuat...' : 'Segarkan'}</span>
+              </button>
               <Link
                 href="/pembayaran"
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-orange-500/25 active:scale-[0.98] transition-all"

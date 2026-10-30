@@ -95,8 +95,8 @@ export default function CatatPengeluaranPage() {
         setNote('');
         setReceiptPhoto('');
         setTimeout(() => {
-          router.push('/buku-kas');
-        }, 1500);
+          window.location.href = '/buku-kas';
+        }, 1200);
       } else {
         setErrorMessage(json.error || 'Gagal menyimpan pengeluaran');
       }

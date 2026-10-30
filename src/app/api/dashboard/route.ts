@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { getInitialOpeningBalance, getMonthLedger, getYearLedgerSummary } from '@/lib/ledger';
+import { getMonthLedger, getYearLedgerSummary } from '@/lib/ledger';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(request: Request) {
   try {
@@ -15,29 +16,83 @@ export async function GET(request: Request) {
     // Current month ledger
     const currentMonthLedger = await getMonthLedger(year, month, undefined, db);
 
-    // Current cash balance across all transactions to date
+    // Current cash balance across all transactions to date for selected year
     const allLedger = await getYearLedgerSummary(year, db);
     const currentBalance = currentMonthLedger.closing_balance;
 
-    // Collection rate for this month
+    // Collection rate & Arrears for this month
     const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
-    const totalDuesRow = (await db.prepare(`
-      SELECT count(DISTINCT house_code) as total_billed,
-             count(DISTINCT CASE WHEN status = 'lunas' THEN house_code END) as total_paid
-      FROM dues
-      WHERE year_month = ?
-    `).get(yearMonth)) as any;
 
-    // Arrears: houses that haven't paid or have unpaid dues
-    const arrearsRows = (await db.prepare(`
-      SELECT house_code,
-             sum(amount - paid_amount) as total_owed,
-             group_concat(DISTINCT year_month) as months_owed
+    // 1. Get all occupied houses (excluding kosong and kantor)
+    const occupiedHouses = (await db.prepare(`
+      SELECT code, handover_date
+      FROM houses
+      WHERE status NOT IN ('kosong', 'kantor')
+      ORDER BY block ASC, length(code) ASC, code ASC
+    `).all()) as Array<{ code: string; handover_date: string | null }>;
+
+    // 2. Identify which houses have paid for this month (from payment_allocations or dues with status 'lunas')
+    const paidAllocRows = (await db.prepare(`
+      SELECT DISTINCT house_code
+      FROM payment_allocations
+      WHERE year_month = ?
+    `).all(yearMonth)) as Array<{ house_code: string }>;
+
+    const paidDuesRows = (await db.prepare(`
+      SELECT DISTINCT house_code
+      FROM dues
+      WHERE year_month = ? AND status = 'lunas'
+    `).all(yearMonth)) as Array<{ house_code: string }>;
+
+    const paidHouseCodes = new Set([
+      ...paidAllocRows.map((r) => r.house_code),
+      ...paidDuesRows.map((r) => r.house_code),
+    ]);
+
+    // Filter billed houses based on handover date (must be on or before this month)
+    const billedHouses = occupiedHouses.filter(
+      (h) => !h.handover_date || h.handover_date.slice(0, 7) <= yearMonth
+    );
+    const totalBilled = billedHouses.length;
+    const totalPaid = billedHouses.filter((h) => paidHouseCodes.has(h.code)).length;
+    const percentage = totalBilled > 0 ? Math.round((totalPaid / totalBilled) * 100) : 0;
+
+    // 3. Arrears: houses in billedHouses that haven't paid for yearMonth or have earlier unpaid dues
+    const duesDebtRows = (await db.prepare(`
+      SELECT house_code, sum(amount - paid_amount) as debt, group_concat(DISTINCT year_month) as months
       FROM dues
       WHERE status != 'lunas' AND (amount - paid_amount) > 0
       GROUP BY house_code
-      ORDER BY total_owed DESC
-    `).all()) as any[];
+    `).all()) as Array<{ house_code: string; debt: number; months: string }>;
+
+    const arrearsMap = new Map<string, { houseCode: string; totalOwed: number; monthsOwed: string[] }>();
+
+    for (const d of duesDebtRows) {
+      arrearsMap.set(d.house_code, {
+        houseCode: d.house_code,
+        totalOwed: d.debt,
+        monthsOwed: (d.months || '').split(','),
+      });
+    }
+
+    const unpaidHousesThisMonth = billedHouses.filter((h) => !paidHouseCodes.has(h.code));
+    for (const uh of unpaidHousesThisMonth) {
+      const existing = arrearsMap.get(uh.code);
+      if (existing) {
+        if (!existing.monthsOwed.includes(yearMonth)) {
+          existing.monthsOwed.push(yearMonth);
+          existing.totalOwed += 120000;
+        }
+      } else {
+        arrearsMap.set(uh.code, {
+          houseCode: uh.code,
+          totalOwed: 120000,
+          monthsOwed: [yearMonth],
+        });
+      }
+    }
+
+    const arrears = Array.from(arrearsMap.values()).sort((a, b) => b.totalOwed - a.totalOwed);
 
     // 12-month bar chart data for selected year
     const chartData = allLedger.months.map((m) => ({
@@ -61,16 +116,12 @@ export async function GET(request: Request) {
         saldoAwal: currentMonthLedger.opening_balance,
         saldoAkhir: currentMonthLedger.closing_balance,
         collectionRate: {
-          billed: totalDuesRow?.total_billed || 0,
-          paid: totalDuesRow?.total_paid || 0,
-          percentage: totalDuesRow?.total_billed ? Math.round((totalDuesRow.total_paid / totalDuesRow.total_billed) * 100) : 0,
+          billed: totalBilled,
+          paid: totalPaid,
+          percentage,
         },
       },
-      arrears: arrearsRows.map((r) => ({
-        houseCode: r.house_code,
-        totalOwed: r.total_owed,
-        monthsOwed: (r.months_owed || '').split(','),
-      })),
+      arrears,
       chartData,
     }, {
       headers: {
