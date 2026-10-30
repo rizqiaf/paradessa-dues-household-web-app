@@ -3,6 +3,7 @@ import { getDb } from '@/lib/db';
 import { getMonthLedger, getYearLedgerSummary, getMultiYearLedgerSummary } from '@/lib/ledger';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(request: Request) {
   try {
@@ -19,19 +20,25 @@ export async function GET(request: Request) {
     const type = (searchParams.get('type') as 'masuk' | 'keluar') || undefined;
     const search = searchParams.get('search') || undefined;
 
+    const noCacheHeaders = {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    };
+
     if (view === 'multi-year') {
       const summary = await getMultiYearLedgerSummary(db);
-      return NextResponse.json({ success: true, view: 'multi-year', data: summary });
+      return NextResponse.json({ success: true, view: 'multi-year', data: summary }, { headers: noCacheHeaders });
     }
 
     if (view === 'year') {
       const summary = await getYearLedgerSummary(year, db);
-      return NextResponse.json({ success: true, view: 'year', year, data: summary });
+      return NextResponse.json({ success: true, view: 'year', year, data: summary }, { headers: noCacheHeaders });
     }
 
     // Default: month view
     const summary = await getMonthLedger(year, month, { category, houseCode, type, search }, db);
-    return NextResponse.json({ success: true, view: 'month', year, month, data: summary });
+    return NextResponse.json({ success: true, view: 'month', year, month, data: summary }, { headers: noCacheHeaders });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

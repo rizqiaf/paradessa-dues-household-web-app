@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb, recordAuditLog } from '@/lib/db';
-import { calculateAutoAllocation } from '@/lib/allocation';
+import { calculateAutoAllocation, getNextYearMonth } from '@/lib/allocation';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +39,12 @@ export async function GET(request: Request) {
       allocations: allocationsByPayment[p.id] || [],
     }));
 
-    return NextResponse.json({ success: true, data: result });
+    return NextResponse.json({ success: true, data: result }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
@@ -58,6 +63,7 @@ export async function POST(request: Request) {
       proof_photo,
       note,
       custom_allocations,
+      target_month,
     } = body;
 
     if (!house_code || !amount || amount <= 0) {
@@ -120,7 +126,24 @@ export async function POST(request: Request) {
         ORDER BY year_month ASC
       `).all(house_code)) as any[];
 
-      const autoResult = calculateAutoAllocation(amount, duesRows, subscriptions, txYearMonth);
+      const lastPaidRow = (await db.prepare(`
+        SELECT max(year_month) as last_paid
+        FROM payment_allocations
+        WHERE house_code = ?
+      `).get(house_code)) as any;
+
+      let suggestedMonth = txYearMonth;
+      if (duesRows.length > 0) {
+        suggestedMonth = duesRows[0].year_month;
+      } else if (lastPaidRow?.last_paid) {
+        suggestedMonth = getNextYearMonth(lastPaidRow.last_paid);
+      }
+
+      const effectiveTargetMonth = (target_month && target_month !== 'auto')
+        ? target_month
+        : suggestedMonth;
+
+      const autoResult = calculateAutoAllocation(amount, duesRows, subscriptions, txYearMonth, effectiveTargetMonth);
       allocationsToSave = autoResult.allocations;
       houseCreditAmount = autoResult.houseCredit;
     }
@@ -186,6 +209,11 @@ export async function POST(request: Request) {
       paymentNumber,
       houseCreditAmount,
       allocationsCount: allocationsToSave.length,
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+      },
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

@@ -78,7 +78,13 @@ export default function BukuKasPage() {
       if (filterHouse) params.append('house_code', filterHouse);
       if (searchQuery) params.append('search', searchQuery);
 
-      const res = await fetch(`/api/ledger?${params.toString()}`);
+      const res = await fetch(`/api/ledger?${params.toString()}&_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+      });
       const json = await res.json();
       if (json.success) {
         if (viewMode === 'month') setLedgerData(json.data);
@@ -228,8 +234,19 @@ export default function BukuKasPage() {
 
               <button
                 type="button"
+                onClick={fetchLedger}
+                disabled={loading}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-xs font-bold text-stone-700 shadow-xs transition-colors cursor-pointer"
+                title="Segarkan data transaksi terbaru"
+              >
+                <RotateCcw className={`w-3.5 h-3.5 text-stone-500 ${loading ? 'animate-spin text-orange-600' : ''}`} />
+                <span>Segarkan</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={handleExportExcel}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-xs font-bold text-stone-700 shadow-xs transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-xs font-bold text-stone-700 shadow-xs transition-colors cursor-pointer"
               >
                 <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
                 <span>Export Excel</span>

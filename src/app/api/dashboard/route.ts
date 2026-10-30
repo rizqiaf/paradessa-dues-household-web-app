@@ -72,6 +72,12 @@ export async function GET(request: Request) {
         monthsOwed: (r.months_owed || '').split(','),
       })),
       chartData,
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

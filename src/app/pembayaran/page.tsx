@@ -13,8 +13,9 @@ import {
   ShieldCheck,
   PlusCircle,
   Trash2,
+  Clock,
 } from 'lucide-react';
-import { formatRupiah, formatBulanTahun, normalizeHouseCode } from '@/lib/format';
+import { formatRupiah, formatBulanTahun, normalizeHouseCode, BULAN_INDONESIA } from '@/lib/format';
 import { useRole } from '@/context/RoleContext';
 
 export default function CatatPembayaranPage() {
@@ -30,6 +31,11 @@ export default function CatatPembayaranPage() {
   const [note, setNote] = useState('');
   const [proofPhoto, setProofPhoto] = useState('');
 
+  // Target month selection (default: 'auto')
+  const [targetMonth, setTargetMonth] = useState<string>('auto');
+  const [suggestedMonth, setSuggestedMonth] = useState<string>('');
+  const [availableMonths, setAvailableMonths] = useState<any[]>([]);
+
   // Preview state
   const [previewData, setPreviewData] = useState<any>(null);
   const [quickLunasAmount, setQuickLunasAmount] = useState<number>(0);
@@ -42,8 +48,13 @@ export default function CatatPembayaranPage() {
   // Search filter for house picker
   const [searchHouseQuery, setSearchHouseQuery] = useState('');
 
+  // Current month & next month helpers
+  const currentYearMonth = date ? date.slice(0, 7) : new Date().toISOString().slice(0, 7);
+  const [currY, currM] = currentYearMonth.split('-').map(Number);
+  const nextYearMonth = currM === 12 ? `${currY + 1}-01` : `${currY}-${String(currM + 1).padStart(2, '0')}`;
+
   useEffect(() => {
-    fetch('/api/houses')
+    fetch('/api/houses', { cache: 'no-store' })
       .then((res) => res.json())
       .then((json) => {
         if (json.success) setHouses(json.data);
@@ -55,6 +66,7 @@ export default function CatatPembayaranPage() {
     if (!selectedHouse) {
       setPreviewData(null);
       setQuickLunasAmount(0);
+      setSuggestedMonth('');
       return;
     }
     const h = houses.find((item) => item.code === selectedHouse);
@@ -62,20 +74,20 @@ export default function CatatPembayaranPage() {
       setPayerName(h.currentResident.name);
     }
 
-    fetchPreview(selectedHouse, amount || 0, date);
+    fetchPreview(selectedHouse, amount || 0, date, targetMonth);
   }, [selectedHouse]);
 
-  // When amount or date changes, recalculate preview
+  // When amount, date, or targetMonth changes, recalculate preview
   useEffect(() => {
     if (selectedHouse) {
       const timer = setTimeout(() => {
-        fetchPreview(selectedHouse, amount || 0, date);
+        fetchPreview(selectedHouse, amount || 0, date, targetMonth);
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [amount, date]);
+  }, [amount, date, targetMonth]);
 
-  const fetchPreview = async (houseCode: string, payAmount: number, payDate: string) => {
+  const fetchPreview = async (houseCode: string, payAmount: number, payDate: string, tMonth: string) => {
     setLoadingPreview(true);
     try {
       const res = await fetch('/api/payments/preview', {
@@ -85,6 +97,7 @@ export default function CatatPembayaranPage() {
           house_code: houseCode,
           amount: payAmount,
           date: payDate,
+          target_month: tMonth,
         }),
       });
       const json = await res.json();
@@ -92,6 +105,10 @@ export default function CatatPembayaranPage() {
         setPreviewData(json.preview);
         setQuickLunasAmount(json.quickLunasAmount);
         setExistingCredit(json.existingCredit);
+        setSuggestedMonth(json.suggestedMonth || '');
+        if (json.availableMonths) {
+          setAvailableMonths(json.availableMonths);
+        }
       }
     } catch {
       // ignore
@@ -130,18 +147,20 @@ export default function CatatPembayaranPage() {
           proof_photo: proofPhoto || null,
           note,
           custom_allocations: previewData?.allocations || null,
+          target_month: targetMonth,
         }),
       });
 
       const json = await res.json();
       if (json.success) {
-        setSuccessMessage(`Pembayaran sebesar ${formatRupiah(Number(amount))} untuk Blok ${selectedHouse} berhasil disimpan!`);
+        setSuccessMessage(`Pembayaran sebesar ${formatRupiah(Number(amount))} untuk Blok ${selectedHouse} berhasil disimpan! Mengalihkan ke Buku Kas...`);
         setAmount('');
         setNote('');
         setProofPhoto('');
         setTimeout(() => {
-          router.push('/buku-kas');
-        }, 1500);
+          // Hard navigation to ensure no stale client cache
+          window.location.href = '/buku-kas';
+        }, 1200);
       } else {
         setErrorMessage(json.error || 'Gagal menyimpan pembayaran');
       }
@@ -201,7 +220,10 @@ export default function CatatPembayaranPage() {
               />
               <select
                 value={selectedHouse}
-                onChange={(e) => setSelectedHouse(e.target.value)}
+                onChange={(e) => {
+                  setSelectedHouse(e.target.value);
+                  setTargetMonth('auto');
+                }}
                 required
                 className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-xs sm:text-sm focus:outline-none focus:border-orange-500 focus:bg-white font-bold cursor-pointer"
               >
@@ -226,13 +248,92 @@ export default function CatatPembayaranPage() {
                 <button
                   type="button"
                   onClick={handleQuickLunas}
-                  className="px-3.5 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold transition-colors shadow-xs self-start sm:self-auto"
+                  className="px-3.5 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold transition-colors shadow-xs self-start sm:self-auto cursor-pointer"
                 >
                   Lunas Bulan Ini
                 </button>
               </div>
             )}
           </div>
+
+          {/* Target Month Selector (Pilihan Pembayaran Untuk Bulan Apa) */}
+          {selectedHouse && (
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50/80 border border-stone-200/90 space-y-2.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-orange-600" />
+                  <span>Pilihan Pembayaran Untuk Bulan</span>
+                </label>
+                {suggestedMonth && (
+                  <span className="text-[11px] font-bold text-orange-700 bg-orange-100/70 px-2.5 py-0.5 rounded-lg border border-orange-200 self-start sm:self-auto">
+                    Saran Sistem: {formatBulanTahun(suggestedMonth)}
+                  </span>
+                )}
+              </div>
+
+              {/* Quick Month Selectors */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTargetMonth(currentYearMonth)}
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all text-left flex items-center justify-between cursor-pointer ${
+                    targetMonth === currentYearMonth
+                      ? 'bg-orange-500 text-white border-orange-500 shadow-xs'
+                      : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-100'
+                  }`}
+                >
+                  <span className="truncate">Bulan Ini ({formatBulanTahun(currentYearMonth)})</span>
+                  {targetMonth === currentYearMonth && <CheckCircle className="w-3.5 h-3.5 shrink-0 ml-1" />}
+                </button>
+
+                {suggestedMonth && suggestedMonth !== currentYearMonth && (
+                  <button
+                    type="button"
+                    onClick={() => setTargetMonth(suggestedMonth)}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all text-left flex items-center justify-between cursor-pointer ${
+                      targetMonth === suggestedMonth
+                        ? 'bg-orange-500 text-white border-orange-500 shadow-xs'
+                        : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-100'
+                    }`}
+                  >
+                    <span className="truncate">Saran ({formatBulanTahun(suggestedMonth)})</span>
+                    {targetMonth === suggestedMonth && <CheckCircle className="w-3.5 h-3.5 shrink-0 ml-1" />}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setTargetMonth(nextYearMonth)}
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all text-left flex items-center justify-between cursor-pointer ${
+                    targetMonth === nextYearMonth
+                      ? 'bg-orange-500 text-white border-orange-500 shadow-xs'
+                      : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-100'
+                  }`}
+                >
+                  <span className="truncate">Bulan Depan ({formatBulanTahun(nextYearMonth)})</span>
+                  {targetMonth === nextYearMonth && <CheckCircle className="w-3.5 h-3.5 shrink-0 ml-1" />}
+                </button>
+              </div>
+
+              {/* Full Month Dropdown */}
+              <div className="relative">
+                <select
+                  value={targetMonth}
+                  onChange={(e) => setTargetMonth(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-stone-200 text-stone-900 text-xs sm:text-sm focus:outline-none focus:border-orange-500 font-semibold cursor-pointer"
+                >
+                  <option value="auto">
+                    -- Otomatis Sesuai Urutan Tunggakan ({suggestedMonth ? formatBulanTahun(suggestedMonth) : formatBulanTahun(currentYearMonth)}) --
+                  </option>
+                  {availableMonths.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
 
           {/* Amount & Date Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -298,7 +399,7 @@ export default function CatatPembayaranPage() {
                 <button
                   type="button"
                   onClick={() => setMethod('transfer')}
-                  className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                     method === 'transfer'
                       ? 'bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-500/20'
                       : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
@@ -309,7 +410,7 @@ export default function CatatPembayaranPage() {
                 <button
                   type="button"
                   onClick={() => setMethod('cash')}
-                  className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                     method === 'cash'
                       ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                       : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
@@ -350,85 +451,79 @@ export default function CatatPembayaranPage() {
             </div>
 
             {loadingPreview ? (
-              <div className="py-4 text-center text-xs text-stone-400">Menghitung alokasi otomatis...</div>
-            ) : previewData?.allocations?.length > 0 ? (
+              <div className="py-8 text-center text-xs text-stone-400 font-bold animate-pulse">
+                Menghitung alokasi komponen iuran...
+              </div>
+            ) : previewData?.allocations && previewData.allocations.length > 0 ? (
               <div className="space-y-3">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-stone-50 text-stone-500 uppercase tracking-wider text-[10px]">
-                      <tr>
-                        <th className="px-3.5 py-2.5 rounded-l-xl">Bulan Dues</th>
-                        <th className="px-3.5 py-2.5">Komponen</th>
-                        <th className="px-3.5 py-2.5">Jenis</th>
-                        <th className="px-3.5 py-2.5 text-right rounded-r-xl">Nominal Alokasi</th>
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-stone-200 text-stone-600 uppercase text-[10px] tracking-wider font-extrabold">
+                        <th className="py-2 text-left">Bulan Dues</th>
+                        <th className="py-2 text-left">Komponen</th>
+                        <th className="py-2 text-left">Jenis</th>
+                        <th className="py-2 text-right">Nominal Alokasi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100">
                       {previewData.allocations.map((alloc: any, idx: number) => (
-                        <tr key={idx} className="hover:bg-orange-50/20">
-                          <td className="px-3.5 py-3 font-bold text-stone-900">
-                            {formatBulanTahun(alloc.year_month)}
-                          </td>
-                          <td className="px-3.5 py-3 font-semibold text-stone-700">
-                            {alloc.component_name}
-                          </td>
-                          <td className="px-3.5 py-3">
+                        <tr key={idx} className="hover:bg-stone-50/50">
+                          <td className="py-2 font-bold text-stone-900">{formatBulanTahun(alloc.year_month)}</td>
+                          <td className="py-2 font-medium text-stone-700">{alloc.component_name}</td>
+                          <td className="py-2">
                             {alloc.is_future_prepayment ? (
-                              <span className="text-[10px] bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-full border border-amber-200">
+                              <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold">
                                 Prepayment
                               </span>
                             ) : (
-                              <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full border border-emerald-200">
-                                Tagihan / Tunggakan
+                              <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold">
+                                Pelunasan Tunggakan
                               </span>
                             )}
                           </td>
-                          <td className="px-3.5 py-3 text-right font-black text-emerald-600">
-                            {formatRupiah(alloc.amount)}
-                          </td>
+                          <td className="py-2 text-right font-black text-stone-900">{formatRupiah(alloc.amount)}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
 
-                {/* Overpayment House Credit Notice */}
+                {/* Overpayment Credit Warning */}
                 {previewData.houseCredit > 0 && (
-                  <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium flex items-center justify-between">
                     <span>
-                      Kelebihan Pembayaran: <strong>{formatRupiah(previewData.houseCredit)}</strong>
+                      Sisa lebih pembayaran akan dicatat sebagai <strong>Saldo Kredit Rumah</strong>:
                     </span>
-                    <span className="text-[11px] text-amber-700 font-bold">
-                      Disimpan otomatis sebagai Saldo Kredit Rumah
-                    </span>
+                    <strong className="text-amber-950 font-black">{formatRupiah(previewData.houseCredit)}</strong>
                   </div>
                 )}
               </div>
             ) : (
-              <p className="text-xs text-stone-500 py-2">
-                Tidak ada alokasi tagihan ditemukan. Seluruh pembayaran akan masuk ke saldo kredit rumah.
+              <p className="text-xs text-stone-400 py-4 text-center">
+                Masukkan nominal pembayaran untuk melihat simulasi alokasi ke komponen Pokok, Air, dan Sampah.
               </p>
             )}
           </div>
         )}
 
-        {/* Submit Button */}
+        {/* Submit Actions */}
         <div className="flex items-center justify-end gap-3 pt-2">
           <button
             type="button"
-            onClick={() => router.back()}
-            className="px-5 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs transition-colors"
+            onClick={() => router.push('/buku-kas')}
+            className="px-5 py-2.5 rounded-xl border border-stone-200 hover:bg-stone-50 text-stone-600 font-bold text-xs sm:text-sm transition-colors cursor-pointer"
           >
             Batal
           </button>
           <button
             type="submit"
-            disabled={saving || !selectedHouse || !amount}
-            className="px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-black text-xs sm:text-sm shadow-md shadow-orange-500/25 transition-all flex items-center gap-2"
+            disabled={saving || !selectedHouse || !amount || Number(amount) <= 0}
+            className="px-6 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-extrabold text-xs sm:text-sm shadow-sm transition-all flex items-center gap-2 cursor-pointer"
           >
             {saving ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 <span>Menyimpan...</span>
               </>
             ) : (

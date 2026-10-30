@@ -62,78 +62,123 @@ export function generateMonthComponents(
 
 /**
  * Auto-allocates an incoming payment amount:
- * 1. Oldest unpaid dues first (arrears)
- * 2. If money remains, next future months in sequence (prepayment)
- * 3. Any leftover change beyond full or partial components becomes house credit
+ * 1. If targetMonth is specified, allocate starting from targetMonth
+ * 2. Otherwise allocate to oldest unpaid dues first (arrears)
+ * 3. If money remains, next future months in sequence (prepayment)
+ * 4. Any leftover change beyond full or partial components becomes house credit
  */
 export function calculateAutoAllocation(
   amount: number,
   existingUnpaidDues: UnpaidDueItem[],
   subscriptions: SubscribedComponent[],
-  referenceYearMonth: string = new Date().toISOString().slice(0, 7)
+  referenceYearMonth: string = new Date().toISOString().slice(0, 7),
+  targetMonth?: string | null
 ): AllocationResult {
   let remainingMoney = Math.max(0, Math.floor(amount));
   const allocations: ProposedAllocation[] = [];
   const coveredMonthsSet = new Set<string>();
 
-  // 1. Allocate to existing unpaid dues (sorted chronologically)
-  // Sort by year_month ASC, then Pokok -> Air -> Sampah
   const order: Record<string, number> = { Pokok: 1, Air: 2, Sampah: 3 };
-  const sortedUnpaid = [...existingUnpaidDues].sort((a, b) => {
-    if (a.year_month !== b.year_month) {
-      return a.year_month.localeCompare(b.year_month);
-    }
-    return (order[a.component_name] || 99) - (order[b.component_name] || 99);
-  });
 
-  for (const due of sortedUnpaid) {
-    if (remainingMoney <= 0) break;
-    const need = due.remaining;
-    if (need <= 0) continue;
-
-    const allocAmount = Math.min(remainingMoney, need);
-    allocations.push({
-      due_id: due.id || null,
-      year_month: due.year_month,
-      component_name: due.component_name,
-      amount: allocAmount,
-      is_future_prepayment: false,
-    });
-
-    remainingMoney -= allocAmount;
-    coveredMonthsSet.add(due.year_month);
-  }
-
-  // 2. If money remains and subscriptions exist, generate future months as prepayment
-  if (remainingMoney > 0 && subscriptions.length > 0) {
-    // Find highest month already allocated or reference month
-    let lastMonth = referenceYearMonth;
-    for (const alloc of allocations) {
-      if (alloc.year_month > lastMonth) {
-        lastMonth = alloc.year_month;
-      }
-    }
-
-    let nextMonth = getNextYearMonth(lastMonth);
-    // Limit to 36 future months to prevent infinite loops on crazy numbers
+  // If user selected a specific target month (e.g. "2026-10")
+  if (targetMonth && targetMonth !== 'auto') {
+    let curMonth = targetMonth;
     let iterations = 0;
     while (remainingMoney > 0 && iterations < 36) {
       iterations++;
-      const futureComponents = generateMonthComponents(nextMonth, subscriptions);
-      for (const comp of futureComponents) {
-        if (remainingMoney <= 0) break;
-        const allocAmount = Math.min(remainingMoney, comp.remaining);
-        allocations.push({
-          due_id: null,
-          year_month: nextMonth,
-          component_name: comp.component_name,
-          amount: allocAmount,
-          is_future_prepayment: true,
-        });
-        remainingMoney -= allocAmount;
-        coveredMonthsSet.add(nextMonth);
+      // Check if existing unpaid due exists for curMonth
+      const dueItemsForMonth = existingUnpaidDues.filter((d) => d.year_month === curMonth);
+      if (dueItemsForMonth.length > 0) {
+        for (const due of dueItemsForMonth) {
+          if (remainingMoney <= 0) break;
+          const need = due.remaining;
+          if (need <= 0) continue;
+          const allocAmount = Math.min(remainingMoney, need);
+          allocations.push({
+            due_id: due.id || null,
+            year_month: due.year_month,
+            component_name: due.component_name,
+            amount: allocAmount,
+            is_future_prepayment: false,
+          });
+          remainingMoney -= allocAmount;
+          coveredMonthsSet.add(due.year_month);
+        }
+      } else {
+        // Generate components for curMonth
+        const futureComponents = generateMonthComponents(curMonth, subscriptions);
+        for (const comp of futureComponents) {
+          if (remainingMoney <= 0) break;
+          const allocAmount = Math.min(remainingMoney, comp.remaining);
+          allocations.push({
+            due_id: null,
+            year_month: curMonth,
+            component_name: comp.component_name,
+            amount: allocAmount,
+            is_future_prepayment: curMonth > referenceYearMonth,
+          });
+          remainingMoney -= allocAmount;
+          coveredMonthsSet.add(curMonth);
+        }
       }
-      nextMonth = getNextYearMonth(nextMonth);
+      curMonth = getNextYearMonth(curMonth);
+    }
+  } else {
+    // 1. Allocate to existing unpaid dues (sorted chronologically)
+    const sortedUnpaid = [...existingUnpaidDues].sort((a, b) => {
+      if (a.year_month !== b.year_month) {
+        return a.year_month.localeCompare(b.year_month);
+      }
+      return (order[a.component_name] || 99) - (order[b.component_name] || 99);
+    });
+
+    for (const due of sortedUnpaid) {
+      if (remainingMoney <= 0) break;
+      const need = due.remaining;
+      if (need <= 0) continue;
+
+      const allocAmount = Math.min(remainingMoney, need);
+      allocations.push({
+        due_id: due.id || null,
+        year_month: due.year_month,
+        component_name: due.component_name,
+        amount: allocAmount,
+        is_future_prepayment: false,
+      });
+
+      remainingMoney -= allocAmount;
+      coveredMonthsSet.add(due.year_month);
+    }
+
+    // 2. If money remains and subscriptions exist, generate future months as prepayment
+    if (remainingMoney > 0 && subscriptions.length > 0) {
+      let lastMonth = referenceYearMonth;
+      for (const alloc of allocations) {
+        if (alloc.year_month > lastMonth) {
+          lastMonth = alloc.year_month;
+        }
+      }
+
+      let nextMonth = getNextYearMonth(lastMonth);
+      let iterations = 0;
+      while (remainingMoney > 0 && iterations < 36) {
+        iterations++;
+        const futureComponents = generateMonthComponents(nextMonth, subscriptions);
+        for (const comp of futureComponents) {
+          if (remainingMoney <= 0) break;
+          const allocAmount = Math.min(remainingMoney, comp.remaining);
+          allocations.push({
+            due_id: null,
+            year_month: nextMonth,
+            component_name: comp.component_name,
+            amount: allocAmount,
+            is_future_prepayment: true,
+          });
+          remainingMoney -= allocAmount;
+          coveredMonthsSet.add(nextMonth);
+        }
+        nextMonth = getNextYearMonth(nextMonth);
+      }
     }
   }
 
