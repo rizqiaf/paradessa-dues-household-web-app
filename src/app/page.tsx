@@ -77,10 +77,12 @@ export default function DashboardPage() {
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibility);
 
-    // Live auto-refresh polling every 8s to guarantee latest transactions are always rendered
+    // Live auto-refresh polling every 20s when tab is active to keep latest transactions synced
     const interval = setInterval(() => {
-      loadDashboard(false);
-    }, 8000);
+      if (document.visibilityState === 'visible') {
+        loadDashboard(false);
+      }
+    }, 20000);
 
     return () => {
       window.removeEventListener('focus', handleFocus);
@@ -89,12 +91,27 @@ export default function DashboardPage() {
     };
   }, [loadDashboard, pathname]);
 
-  if (loading) {
+  if (loading && !data) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-sm text-stone-500 font-medium">Memuat data kas Paradessa...</p>
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-pulse">
+        {/* Banner Skeleton */}
+        <div className="h-28 sm:h-36 rounded-2xl sm:rounded-3xl bg-stone-100 dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800"></div>
+
+        {/* 4 Metric Cards Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-28 rounded-2xl bg-stone-100 dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800 p-4 space-y-3">
+              <div className="h-3 w-20 bg-stone-200 dark:bg-stone-800 rounded-md"></div>
+              <div className="h-7 w-32 bg-stone-200 dark:bg-stone-800 rounded-lg"></div>
+              <div className="h-3 w-24 bg-stone-200 dark:bg-stone-800 rounded-md"></div>
+            </div>
+          ))}
+        </div>
+
+        {/* Chart & Arrears Grid Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="lg:col-span-2 h-80 rounded-2xl sm:rounded-3xl bg-stone-100 dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800"></div>
+          <div className="lg:col-span-1 h-80 rounded-2xl sm:rounded-3xl bg-stone-100 dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800"></div>
         </div>
       </div>
     );

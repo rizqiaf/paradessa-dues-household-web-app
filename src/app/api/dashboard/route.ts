@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { getMonthLedger, getYearLedgerSummary } from '@/lib/ledger';
+import { getMonthLedger, getYearLedgerSummary, getAllLedgerRawItems, getInitialOpeningBalance } from '@/lib/ledger';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -11,26 +11,72 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const now = new Date();
 
-    // Default to the latest transaction month in the database or today's date
-    const latestTxRow = (await db.prepare(`
-      SELECT max(date) as max_date FROM (
-        SELECT date FROM payments
-        UNION ALL
-        SELECT date FROM expenses
-      )
-    `).get()) as { max_date: string | null } | undefined;
+    const paramYear = searchParams.get('year');
+    const paramMonth = searchParams.get('month');
 
-    const defaultYearMonth = latestTxRow?.max_date ? latestTxRow.max_date.slice(0, 7) : now.toISOString().slice(0, 7);
-    const [defY, defM] = defaultYearMonth.split('-').map(Number);
+    // 1. Concurrently fetch all raw ledger items, initial balance, occupied houses, and dues debt
+    const [
+      allRawItems,
+      initialBalObj,
+      occupiedHouses,
+      duesDebtRows,
+    ] = await Promise.all([
+      getAllLedgerRawItems(db),
+      getInitialOpeningBalance(db),
+      db.prepare(`
+        SELECT code, handover_date
+        FROM houses
+        WHERE status NOT IN ('kosong', 'kantor')
+        ORDER BY block ASC, length(code) ASC, code ASC
+      `).all() as Promise<Array<{ code: string; handover_date: string | null }>>,
+      db.prepare(`
+        SELECT house_code, sum(amount - paid_amount) as debt, group_concat(DISTINCT year_month) as months
+        FROM dues
+        WHERE status != 'lunas' AND (amount - paid_amount) > 0
+        GROUP BY house_code
+      `).all() as Promise<Array<{ house_code: string; debt: number; months: string }>>,
+    ]);
 
-    const year = parseInt(searchParams.get('year') || String(defY), 10);
-    const month = parseInt(searchParams.get('month') || String(defM), 10);
+    // Determine target year & month
+    let year = paramYear ? parseInt(paramYear, 10) : now.getFullYear();
+    let month = paramMonth ? parseInt(paramMonth, 10) : (now.getMonth() + 1);
 
-    // Current month ledger (calculates opening, masuk, keluar, and closing balance)
-    const currentMonthLedger = await getMonthLedger(year, month, undefined, db);
+    if (!paramYear || !paramMonth) {
+      if (allRawItems.length > 0) {
+        const latestDate = allRawItems[allRawItems.length - 1].date;
+        const [ly, lm] = latestDate.split('-').map(Number);
+        if (!paramYear) year = ly;
+        if (!paramMonth) month = lm;
+      }
+    }
 
-    // Current cash balance across all transactions up to end of this month
-    const allLedger = await getYearLedgerSummary(year, db);
+    const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
+
+    // 2. Concurrently fetch paid allocation rows, paid dues, and compute 12-month summary in memory
+    const [paidAllocRows, paidDuesRows, allLedger] = await Promise.all([
+      db.prepare(`
+        SELECT DISTINCT house_code
+        FROM payment_allocations
+        WHERE year_month = ?
+      `).all(yearMonth) as Promise<Array<{ house_code: string }>>,
+      db.prepare(`
+        SELECT DISTINCT house_code
+        FROM dues
+        WHERE year_month = ? AND status = 'lunas'
+      `).all(yearMonth) as Promise<Array<{ house_code: string }>>,
+      getYearLedgerSummary(year, db, allRawItems, initialBalObj.balance),
+    ]);
+
+    // 3. Compute current month ledger completely in-memory using preloaded raw items
+    const currentMonthLedger = await getMonthLedger(
+      year,
+      month,
+      undefined,
+      db,
+      allRawItems,
+      initialBalObj.balance
+    );
+
     const currentBalance = currentMonthLedger.closing_balance;
 
     // Transaction counts and last transaction in this month
@@ -41,29 +87,6 @@ export async function GET(request: Request) {
       : null;
 
     // Collection rate & Arrears for this month
-    const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
-
-    // 1. Get all occupied houses (excluding kosong and kantor)
-    const occupiedHouses = (await db.prepare(`
-      SELECT code, handover_date
-      FROM houses
-      WHERE status NOT IN ('kosong', 'kantor')
-      ORDER BY block ASC, length(code) ASC, code ASC
-    `).all()) as Array<{ code: string; handover_date: string | null }>;
-
-    // 2. Identify which houses have paid for this month (from payment_allocations or dues with status 'lunas')
-    const paidAllocRows = (await db.prepare(`
-      SELECT DISTINCT house_code
-      FROM payment_allocations
-      WHERE year_month = ?
-    `).all(yearMonth)) as Array<{ house_code: string }>;
-
-    const paidDuesRows = (await db.prepare(`
-      SELECT DISTINCT house_code
-      FROM dues
-      WHERE year_month = ? AND status = 'lunas'
-    `).all(yearMonth)) as Array<{ house_code: string }>;
-
     const paidHouseCodes = new Set([
       ...paidAllocRows.map((r) => r.house_code),
       ...paidDuesRows.map((r) => r.house_code),
@@ -77,14 +100,7 @@ export async function GET(request: Request) {
     const totalPaid = billedHouses.filter((h) => paidHouseCodes.has(h.code)).length;
     const percentage = totalBilled > 0 ? Math.round((totalPaid / totalBilled) * 100) : 0;
 
-    // 3. Arrears: houses in billedHouses that haven't paid for yearMonth or have earlier unpaid dues
-    const duesDebtRows = (await db.prepare(`
-      SELECT house_code, sum(amount - paid_amount) as debt, group_concat(DISTINCT year_month) as months
-      FROM dues
-      WHERE status != 'lunas' AND (amount - paid_amount) > 0
-      GROUP BY house_code
-    `).all()) as Array<{ house_code: string; debt: number; months: string }>;
-
+    // Arrears: houses in billedHouses that haven't paid for yearMonth or have earlier unpaid dues
     const arrearsMap = new Map<string, { houseCode: string; totalOwed: number; monthsOwed: string[] }>();
 
     for (const d of duesDebtRows) {

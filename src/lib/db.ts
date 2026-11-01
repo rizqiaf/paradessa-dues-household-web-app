@@ -336,6 +336,15 @@ export async function initSchema(db: DatabaseClient = getDb()) {
       created_at TEXT NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
+
+    -- High-Performance Lookup Indexes
+    CREATE INDEX IF NOT EXISTS idx_payments_date ON payments(date);
+    CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);
+    CREATE INDEX IF NOT EXISTS idx_other_income_date ON other_income(date);
+    CREATE INDEX IF NOT EXISTS idx_dues_year_month ON dues(year_month);
+    CREATE INDEX IF NOT EXISTS idx_dues_house_code ON dues(house_code);
+    CREATE INDEX IF NOT EXISTS idx_payment_allocations_ym ON payment_allocations(year_month);
+    CREATE INDEX IF NOT EXISTS idx_month_locks_ym ON month_locks(year_month);
   `);
 }
 
