@@ -109,20 +109,20 @@ export default function DashboardPage() {
   return (
     <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Welcome Banner - White & Orange Aesthetic */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-orange-500/[0.08] via-amber-500/[0.04] to-white border border-orange-200/80 p-4 sm:p-6 lg:p-8 shadow-[0_2px_12px_rgba(249,115,22,0.06)]">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-orange-500/[0.08] via-amber-500/[0.04] to-white dark:to-[#161822] border border-orange-200/80 dark:border-stone-800 p-4 sm:p-6 lg:p-8 shadow-[0_2px_12px_rgba(249,115,22,0.06)] dark:shadow-none">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
           <div className="space-y-1.5 sm:space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-100/80 border border-orange-200 text-[11px] sm:text-xs font-bold text-orange-700">
-              <Sparkles className="w-3.5 h-3.5 text-orange-600" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-100/80 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-900/60 text-[11px] sm:text-xs font-bold text-orange-700 dark:text-orange-400">
+              <Sparkles className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
               <span>{t('dash.badge')}</span>
             </div>
-            <h1 className="text-xl sm:text-3xl lg:text-4xl font-black text-stone-950 tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-3xl lg:text-4xl font-black text-stone-950 dark:text-white tracking-tight leading-tight">
               {t('dash.title')}
             </h1>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-600">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-600 dark:text-stone-400">
               <span>{t('dash.address')}</span>
               {lastUpdated && (
-                <span className="inline-flex items-center gap-1 text-[11px] text-stone-400 font-medium bg-stone-100/80 px-2 py-0.5 rounded-md">
+                <span className="inline-flex items-center gap-1 text-[11px] text-stone-400 dark:text-stone-400 font-medium bg-stone-100/80 dark:bg-stone-800/80 px-2 py-0.5 rounded-md border border-stone-200/60 dark:border-stone-700/60">
                   <Clock className="w-3 h-3 text-stone-400" />
                   <span>{language === 'en' ? 'Updated:' : 'Diperbarui:'} {lastUpdated}</span>
                 </span>
@@ -138,9 +138,9 @@ export default function DashboardPage() {
                 onClick={() => loadDashboard(true)}
                 disabled={refreshing}
                 title={language === 'en' ? 'Reload latest cash data directly from server' : 'Muat ulang data kas terbaru langsung dari server'}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs sm:text-sm border border-stone-200/90 shadow-xs active:scale-[0.98] transition-all disabled:opacity-60 cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-white dark:bg-[#1e222d] hover:bg-stone-50 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 font-bold text-xs sm:text-sm border border-stone-200/90 dark:border-stone-700 shadow-xs active:scale-[0.98] transition-all disabled:opacity-60 cursor-pointer"
               >
-                <RotateCcw className={`w-3.5 h-3.5 text-stone-500 ${refreshing ? 'animate-spin text-orange-600' : ''}`} />
+                <RotateCcw className={`w-3.5 h-3.5 text-stone-500 dark:text-stone-400 ${refreshing ? 'animate-spin text-orange-600 dark:text-orange-400' : ''}`} />
                 <span>{refreshing ? (language === 'en' ? 'Loading...' : 'Memuat...') : (language === 'en' ? 'Refresh' : 'Segarkan')}</span>
               </button>
               <Link
@@ -152,7 +152,7 @@ export default function DashboardPage() {
               </Link>
               <Link
                 href="/pengeluaran"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl bg-white hover:bg-stone-50 text-stone-800 font-bold text-xs sm:text-sm border border-stone-200/90 shadow-xs active:scale-[0.98] transition-all"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl bg-white dark:bg-[#1e222d] hover:bg-stone-50 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs sm:text-sm border border-stone-200/90 dark:border-stone-700 shadow-xs active:scale-[0.98] transition-all"
               >
                 <TrendingDown className="w-4 h-4 text-rose-500" />
                 <span>{t('dash.btn_expense')}</span>
@@ -170,37 +170,37 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Top Metric Cards - Crisp White Cards */}
+      {/* Top Metric Cards - Crisp Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Cash Balance */}
-        <div className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-orange-200 transition-colors">
-          <div className="flex items-center justify-between text-stone-500 mb-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{t('dash.balance')}</span>
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-orange-50 border border-orange-200/70 flex items-center justify-center text-orange-600">
+        <div className="bg-white dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-orange-200 dark:hover:border-orange-800/60 transition-colors">
+          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-400">{t('dash.balance')}</span>
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-orange-50 dark:bg-orange-950/60 border border-orange-200/70 dark:border-orange-900/60 flex items-center justify-center text-orange-600 dark:text-orange-400">
               <Wallet className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 tracking-tight">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 dark:text-white tracking-tight">
             {formatRupiah(currentBalance)}
           </div>
-          <div className="mt-2 text-xs text-stone-500 flex items-center justify-between gap-1.5 font-medium">
-            <span className="text-stone-400">{t('dash.opening')}:</span>
-            <span className="font-bold text-stone-700">{formatRupiah(thisMonth.saldoAwal)}</span>
+          <div className="mt-2 text-xs text-stone-500 dark:text-stone-400 flex items-center justify-between gap-1.5 font-medium">
+            <span className="text-stone-400 dark:text-stone-500">{t('dash.opening')}:</span>
+            <span className="font-bold text-stone-700 dark:text-stone-300">{formatRupiah(thisMonth.saldoAwal)}</span>
           </div>
         </div>
 
         {/* This Month's Income */}
-        <div className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-emerald-200 transition-colors">
-          <div className="flex items-center justify-between text-stone-500 mb-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{t('dash.income')} {thisMonth.monthName}</span>
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600">
+        <div className="bg-white dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-emerald-200 dark:hover:border-emerald-800/60 transition-colors">
+          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-400">{t('dash.income')} {thisMonth.monthName}</span>
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/70 dark:border-emerald-900/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-emerald-600 tracking-tight">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
             +{formatRupiah(thisMonth.pemasukan)}
           </div>
-          <div className="mt-2 text-xs text-emerald-700 flex items-center gap-1 font-semibold">
+          <div className="mt-2 text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1 font-semibold">
             <ArrowUpRight className="w-3.5 h-3.5" />
             <span>
               {thisMonth.pemasukanCount !== undefined
@@ -211,17 +211,17 @@ export default function DashboardPage() {
         </div>
 
         {/* This Month's Expenses */}
-        <div className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-rose-200 transition-colors">
-          <div className="flex items-center justify-between text-stone-500 mb-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{t('dash.expense')} {thisMonth.monthName}</span>
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-rose-50 border border-rose-200/70 flex items-center justify-center text-rose-600">
+        <div className="bg-white dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-rose-200 dark:hover:border-rose-800/60 transition-colors">
+          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-400">{t('dash.expense')} {thisMonth.monthName}</span>
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200/70 dark:border-rose-900/60 flex items-center justify-center text-rose-600 dark:text-rose-400">
               <TrendingDown className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-rose-600 tracking-tight">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-rose-600 dark:text-rose-400 tracking-tight">
             -{formatRupiah(thisMonth.pengeluaran)}
           </div>
-          <div className="mt-2 text-xs text-rose-700 flex items-center gap-1 font-semibold">
+          <div className="mt-2 text-xs text-rose-700 dark:text-rose-400 flex items-center gap-1 font-semibold">
             <ArrowDownRight className="w-3.5 h-3.5" />
             <span>
               {thisMonth.pengeluaranCount !== undefined
@@ -232,22 +232,22 @@ export default function DashboardPage() {
         </div>
 
         {/* Collection Rate */}
-        <div className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-amber-200 transition-colors">
-          <div className="flex items-center justify-between text-stone-500 mb-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{t('dash.rate')}</span>
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 border border-amber-200/70 flex items-center justify-center text-amber-600">
+        <div className="bg-white dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-amber-200 dark:hover:border-amber-800/60 transition-colors">
+          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-400">{t('dash.rate')}</span>
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200/70 dark:border-amber-900/60 flex items-center justify-center text-amber-600 dark:text-amber-400">
               <PieChart className="w-4 h-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-xl sm:text-2xl lg:text-3xl font-black text-orange-600">
+            <span className="text-xl sm:text-2xl lg:text-3xl font-black text-orange-600 dark:text-orange-400">
               {collectionRate.percentage}%
             </span>
-            <span className="text-xs text-stone-500 font-medium">
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
               ({collectionRate.paid} / {collectionRate.billed} {t('dash.houses_unit')})
             </span>
           </div>
-          <div className="w-full bg-stone-100 h-2.5 rounded-full mt-2.5 overflow-hidden">
+          <div className="w-full bg-stone-100 dark:bg-stone-800 h-2.5 rounded-full mt-2.5 overflow-hidden">
             <div
               className="bg-gradient-to-r from-orange-500 to-amber-500 h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.min(100, collectionRate.percentage)}%` }}
@@ -258,18 +258,18 @@ export default function DashboardPage() {
 
       {/* Last Transaction Live Indicator */}
       {thisMonth.lastTransaction && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-2.5 rounded-2xl bg-white border border-stone-200/90 shadow-[0_1px_4px_rgba(0,0,0,0.02)] gap-2 text-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-2.5 rounded-2xl bg-white dark:bg-[#161822] border border-stone-200/90 dark:border-stone-800 shadow-[0_1px_4px_rgba(0,0,0,0.02)] gap-2 text-xs">
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="shrink-0 px-2.5 py-0.5 rounded-lg bg-orange-100 text-orange-800 text-[10px] font-black uppercase tracking-wider border border-orange-200">
+            <span className="shrink-0 px-2.5 py-0.5 rounded-lg bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-400 text-[10px] font-black uppercase tracking-wider border border-orange-200 dark:border-orange-900/60">
               Transaksi Terakhir {thisMonth.monthName}
             </span>
-            <span className="font-semibold text-stone-800 truncate">
+            <span className="font-semibold text-stone-800 dark:text-stone-200 truncate">
               {thisMonth.lastTransaction.date} • {thisMonth.lastTransaction.description}
             </span>
           </div>
           <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
-            <span className="text-stone-400 text-[11px]">Nominal:</span>
-            <span className={`font-black text-xs ${thisMonth.lastTransaction.type === 'masuk' ? 'text-emerald-600' : 'text-rose-600'}`}>
+            <span className="text-stone-400 dark:text-stone-500 text-[11px]">Nominal:</span>
+            <span className={`font-black text-xs ${thisMonth.lastTransaction.type === 'masuk' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
               {thisMonth.lastTransaction.type === 'masuk' ? '+' : '-'}{formatRupiah(thisMonth.lastTransaction.amount)}
             </span>
           </div>
@@ -416,52 +416,52 @@ export default function DashboardPage() {
         </div>
 
         {/* Houses in Arrears Watchlist */}
-        <div className="min-w-0 max-w-full lg:col-span-1 bg-white dark:bg-[#16181d] border border-stone-200/80 dark:border-stone-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-4 overflow-hidden">
+        <div className="min-w-0 max-w-full lg:col-span-1 bg-white dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-4 overflow-hidden">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-base font-extrabold text-stone-900 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-orange-600" />
+              <h2 className="text-base font-extrabold text-stone-900 dark:text-white flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                 <span>{t('dash.arrears_title')}</span>
               </h2>
-              <span className="text-xs font-bold text-orange-700 bg-orange-100/80 px-2.5 py-0.5 rounded-full border border-orange-200">
+              <span className="text-xs font-bold text-orange-700 dark:text-orange-400 bg-orange-100/80 dark:bg-orange-950/60 px-2.5 py-0.5 rounded-full border border-orange-200 dark:border-orange-900/60">
                 {arrears.length} {t('dash.houses_unit')}
               </span>
             </div>
-            <p className="text-xs text-stone-500 mb-4">{language === 'en' ? 'Houses with outstanding unpaid dues' : 'Rumah yang memiliki tagihan belum lunas'}</p>
+            <p className="text-xs text-stone-500 dark:text-stone-400 mb-4">{language === 'en' ? 'Houses with outstanding unpaid dues' : 'Rumah yang memiliki tagihan belum lunas'}</p>
 
             <div className="overflow-y-auto max-h-[360px] space-y-2 pr-1">
               {arrears.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center p-8 text-stone-400">
+                <div className="flex flex-col items-center justify-center text-center p-8 text-stone-400 dark:text-stone-500">
                   <CheckCircle2 className="w-10 h-10 text-emerald-500 mb-2" />
-                  <p className="text-sm font-bold text-stone-700">{t('dash.all_paid')}</p>
-                  <p className="text-xs text-stone-400 mt-1">{t('dash.no_arrears')}</p>
+                  <p className="text-sm font-bold text-stone-700 dark:text-stone-200">{t('dash.all_paid')}</p>
+                  <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">{t('dash.no_arrears')}</p>
                 </div>
               ) : (
                 arrears.map((item: any, idx: number) => (
                   <Link
                     key={idx}
                     href={`/rumah/${item.houseCode}`}
-                    className="flex items-center justify-between p-3 rounded-xl bg-stone-50 hover:bg-orange-50/60 border border-stone-200/60 hover:border-orange-200 transition-all group"
+                    className="flex items-center justify-between p-3 rounded-xl bg-stone-50 dark:bg-[#1e222d] hover:bg-orange-50/60 dark:hover:bg-orange-950/30 border border-stone-200/60 dark:border-stone-700 hover:border-orange-200 dark:hover:border-orange-800/60 transition-all group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-white border border-stone-200 flex items-center justify-center font-black text-orange-600 text-xs shadow-xs">
+                      <div className="w-8 h-8 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center font-black text-orange-600 dark:text-orange-400 text-xs shadow-xs">
                         {item.houseCode}
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-stone-900 group-hover:text-orange-600 transition-colors">
+                        <div className="text-xs font-bold text-stone-900 dark:text-stone-100 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                           Blok {item.houseCode}
                         </div>
-                        <div className="text-[11px] text-stone-500 font-medium">
+                        <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">
                           {item.monthsOwed.length} bulan: {item.monthsOwed.slice(0, 2).map((m: string) => formatBulanTahun(m, true)).join(', ')}
                           {item.monthsOwed.length > 2 && '...'}
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-xs font-black text-rose-600">
+                      <div className="text-xs font-black text-rose-600 dark:text-rose-400">
                         {formatRupiah(item.totalOwed)}
                       </div>
-                      <span className="text-[10px] text-orange-600 font-semibold group-hover:underline">Lihat Detail →</span>
+                      <span className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold group-hover:underline">Lihat Detail →</span>
                     </div>
                   </Link>
                 ))
@@ -469,10 +469,10 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-stone-100">
+          <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800">
             <Link
               href="/rekap-iuran"
-              className="w-full py-2.5 flex items-center justify-center text-xs font-bold text-orange-700 hover:text-orange-800 bg-orange-50 hover:bg-orange-100/80 border border-orange-200 rounded-xl transition-colors"
+              className="w-full py-2.5 flex items-center justify-center text-xs font-bold text-orange-700 dark:text-orange-300 hover:text-orange-800 dark:hover:text-orange-200 bg-orange-50 dark:bg-orange-950/50 hover:bg-orange-100/80 dark:hover:bg-orange-900/60 border border-orange-200 dark:border-orange-900/60 rounded-xl transition-colors"
             >
               <span>{t('dash.view_matrix')}</span>
             </Link>

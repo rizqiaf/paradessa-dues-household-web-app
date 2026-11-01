@@ -17,18 +17,18 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const sessionToken = request.cookies.get('paradessa_session')?.value;
+  const sessionToken = request.cookies.get('paradessa_session')?.value?.trim();
 
   // If on login page and already has session, redirect to home
   if (pathname === '/login') {
-    if (sessionToken) {
+    if (sessionToken && sessionToken.length > 0) {
       return NextResponse.redirect(new URL('/', request.url));
     }
     return NextResponse.next();
   }
 
   // If accessing protected routes without session, redirect to login
-  if (!sessionToken) {
+  if (!sessionToken || sessionToken.length === 0) {
     const loginUrl = new URL('/login', request.url);
     // Don't append callbackUrl for root or static files to keep URL clean
     if (

@@ -29,8 +29,16 @@ body {
 }
 
 /* Elegant dark mode overrides for standard clean cards & surfaces */
+.dark .bg-\[\#fbfbfa\] {
+  background-color: #0f1115 !important;
+}
+
 .dark .bg-white {
   background-color: #16181d !important;
+}
+
+.dark .to-white {
+  --tw-gradient-to: #16181d var(--tw-gradient-to-position) !important;
 }
 
 .dark .bg-white\/95,
@@ -45,13 +53,86 @@ body {
   background-color: #1c1f26 !important;
 }
 
-.dark .bg-stone-100 {
+.dark .bg-stone-100,
+.dark .bg-stone-100\/80 {
   background-color: #272a34 !important;
 }
 
 .dark .bg-stone-200\/60,
 .dark .bg-stone-200\/70 {
   background-color: #2f333f !important;
+}
+
+/* Rich tinted surface accents for dark mode */
+.dark .bg-orange-50,
+.dark .bg-orange-50\/50,
+.dark .bg-orange-50\/60,
+.dark .bg-orange-100,
+.dark .bg-orange-100\/80 {
+  background-color: rgba(249, 115, 22, 0.14) !important;
+}
+
+.dark .border-orange-200,
+.dark .border-orange-200\/60,
+.dark .border-orange-200\/70,
+.dark .border-orange-200\/80 {
+  border-color: rgba(249, 115, 22, 0.3) !important;
+}
+
+.dark .text-orange-700,
+.dark .text-orange-800 {
+  color: #fb923c !important;
+}
+
+.dark .bg-emerald-50,
+.dark .bg-emerald-50\/80,
+.dark .bg-emerald-100,
+.dark .bg-emerald-100\/80 {
+  background-color: rgba(16, 185, 129, 0.14) !important;
+}
+
+.dark .border-emerald-200,
+.dark .border-emerald-200\/70 {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.dark .text-emerald-700,
+.dark .text-emerald-800 {
+  color: #34d399 !important;
+}
+
+.dark .bg-rose-50,
+.dark .bg-rose-50\/80,
+.dark .bg-rose-100,
+.dark .bg-rose-100\/80 {
+  background-color: rgba(244, 63, 94, 0.14) !important;
+}
+
+.dark .border-rose-200,
+.dark .border-rose-200\/70 {
+  border-color: rgba(244, 63, 94, 0.3) !important;
+}
+
+.dark .text-rose-700,
+.dark .text-rose-800 {
+  color: #fb7185 !important;
+}
+
+.dark .bg-amber-50,
+.dark .bg-amber-50\/80,
+.dark .bg-amber-100,
+.dark .bg-amber-100\/80 {
+  background-color: rgba(245, 158, 11, 0.14) !important;
+}
+
+.dark .border-amber-200,
+.dark .border-amber-200\/70 {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.dark .text-amber-700,
+.dark .text-amber-800 {
+  color: #fbbf24 !important;
 }
 
 .dark .text-stone-900,

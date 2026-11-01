@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       message: 'Berhasil logout.',
     });
 
-    const isHttps = req.headers.get('x-forwarded-proto') === 'https';
+    const isHttps = req.headers.get('x-forwarded-proto') === 'https' || req.nextUrl.protocol === 'https:';
 
     response.cookies.set('paradessa_session', '', {
       httpOnly: true,
@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
       sameSite: 'lax',
       path: '/',
       maxAge: 0,
+      expires: new Date(0),
     });
 
     return response;

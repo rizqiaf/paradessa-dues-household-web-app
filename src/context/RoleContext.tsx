@@ -75,12 +75,16 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+      });
     } catch {
       // ignore
     } finally {
       setUser(null);
-      router.push('/login');
+      window.location.replace('/login');
     }
   };
 
