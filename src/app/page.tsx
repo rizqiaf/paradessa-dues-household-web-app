@@ -97,9 +97,9 @@ export default function DashboardPage() {
         {/* Banner Skeleton */}
         <div className="h-28 sm:h-36 rounded-2xl sm:rounded-3xl bg-stone-100 dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800"></div>
 
-        {/* 4 Metric Cards Skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {[1, 2, 3, 4].map((i) => (
+        {/* Metric Cards Skeleton */}
+        <div className={`grid grid-cols-1 sm:grid-cols-2 ${isAdmin ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-3 sm:gap-4`}>
+          {(isAdmin ? [1, 2, 3, 4] : [1, 2, 3]).map((i) => (
             <div key={i} className="h-28 rounded-2xl bg-stone-100 dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800 p-4 space-y-3">
               <div className="h-3 w-20 bg-stone-200 dark:bg-stone-800 rounded-md"></div>
               <div className="h-7 w-32 bg-stone-200 dark:bg-stone-800 rounded-lg"></div>
@@ -109,9 +109,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Chart & Arrears Grid Skeleton */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          <div className="lg:col-span-2 h-80 rounded-2xl sm:rounded-3xl bg-stone-100 dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800"></div>
-          <div className="lg:col-span-1 h-80 rounded-2xl sm:rounded-3xl bg-stone-100 dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800"></div>
+        <div className={`grid grid-cols-1 ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-4 sm:gap-6`}>
+          <div className={`${isAdmin ? 'lg:col-span-2' : 'w-full'} h-80 rounded-2xl sm:rounded-3xl bg-stone-100 dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800`}></div>
+          {isAdmin && (
+            <div className="lg:col-span-1 h-80 rounded-2xl sm:rounded-3xl bg-stone-100 dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800"></div>
+          )}
         </div>
       </div>
     );
@@ -188,7 +190,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Top Metric Cards - Crisp Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${isAdmin ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-3 sm:gap-4`}>
         {/* Total Cash Balance */}
         <div className="bg-white dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-orange-200 dark:hover:border-orange-800/60 transition-colors">
           <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 mb-1.5">
@@ -248,29 +250,31 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Collection Rate */}
-        <div className="bg-white dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-amber-200 dark:hover:border-amber-800/60 transition-colors">
-          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 mb-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-400">{t('dash.rate')}</span>
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200/70 dark:border-amber-900/60 flex items-center justify-center text-amber-600 dark:text-amber-400">
-              <PieChart className="w-4 h-4" />
+        {/* Collection Rate (Admin / Bendahara Only) */}
+        {isAdmin && (
+          <div className="bg-white dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:border-amber-200 dark:hover:border-amber-800/60 transition-colors">
+            <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 mb-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-400">{t('dash.rate')}</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200/70 dark:border-amber-900/60 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                <PieChart className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-xl sm:text-2xl lg:text-3xl font-black text-orange-600 dark:text-orange-400">
+                {collectionRate.percentage}%
+              </span>
+              <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+                ({collectionRate.paid} / {collectionRate.billed} {t('dash.houses_unit')})
+              </span>
+            </div>
+            <div className="w-full bg-stone-100 dark:bg-stone-800 h-2.5 rounded-full mt-2.5 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-orange-500 to-amber-500 h-full rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, collectionRate.percentage)}%` }}
+              ></div>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl sm:text-2xl lg:text-3xl font-black text-orange-600 dark:text-orange-400">
-              {collectionRate.percentage}%
-            </span>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-              ({collectionRate.paid} / {collectionRate.billed} {t('dash.houses_unit')})
-            </span>
-          </div>
-          <div className="w-full bg-stone-100 dark:bg-stone-800 h-2.5 rounded-full mt-2.5 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-orange-500 to-amber-500 h-full rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, collectionRate.percentage)}%` }}
-            ></div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Last Transaction Live Indicator */}
@@ -294,9 +298,9 @@ export default function DashboardPage() {
       )}
 
       {/* Main Grid: 12-Month Bar Chart & Arrears Watchlist */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch min-w-0 max-w-full">
+      <div className={`grid grid-cols-1 ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-4 sm:gap-6 items-stretch min-w-0 max-w-full`}>
         {/* 12-Month Chart */}
-        <div className="min-w-0 max-w-full lg:col-span-2 bg-white dark:bg-[#16181d] border border-stone-200/80 dark:border-stone-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-3 sm:space-y-4 overflow-hidden">
+        <div className={`min-w-0 max-w-full ${isAdmin ? 'lg:col-span-2' : 'w-full'} bg-white dark:bg-[#16181d] border border-stone-200/80 dark:border-stone-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-3 sm:space-y-4 overflow-hidden`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 mb-1">
             <div>
               <h2 className="text-sm sm:text-base font-extrabold text-stone-900 dark:text-white flex items-center gap-2">
@@ -432,69 +436,71 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Houses in Arrears Watchlist */}
-        <div className="min-w-0 max-w-full lg:col-span-1 bg-white dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-4 overflow-hidden">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-base font-extrabold text-stone-900 dark:text-white flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                <span>{t('dash.arrears_title')}</span>
-              </h2>
-              <span className="text-xs font-bold text-orange-700 dark:text-orange-400 bg-orange-100/80 dark:bg-orange-950/60 px-2.5 py-0.5 rounded-full border border-orange-200 dark:border-orange-900/60">
-                {arrears.length} {t('dash.houses_unit')}
-              </span>
-            </div>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mb-4">{language === 'en' ? 'Houses with outstanding unpaid dues' : 'Rumah yang memiliki tagihan belum lunas'}</p>
+        {/* Houses in Arrears Watchlist (Admin / Bendahara Only) */}
+        {isAdmin && (
+          <div className="min-w-0 max-w-full lg:col-span-1 bg-white dark:bg-[#161822] border border-stone-200/80 dark:border-stone-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-4 overflow-hidden">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-base font-extrabold text-stone-900 dark:text-white flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  <span>{t('dash.arrears_title')}</span>
+                </h2>
+                <span className="text-xs font-bold text-orange-700 dark:text-orange-400 bg-orange-100/80 dark:bg-orange-950/60 px-2.5 py-0.5 rounded-full border border-orange-200 dark:border-orange-900/60">
+                  {arrears.length} {t('dash.houses_unit')}
+                </span>
+              </div>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mb-4">{language === 'en' ? 'Houses with outstanding unpaid dues' : 'Rumah yang memiliki tagihan belum lunas'}</p>
 
-            <div className="overflow-y-auto max-h-[360px] space-y-2 pr-1">
-              {arrears.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center p-8 text-stone-400 dark:text-stone-500">
-                  <CheckCircle2 className="w-10 h-10 text-emerald-500 mb-2" />
-                  <p className="text-sm font-bold text-stone-700 dark:text-stone-200">{t('dash.all_paid')}</p>
-                  <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">{t('dash.no_arrears')}</p>
-                </div>
-              ) : (
-                arrears.map((item: any, idx: number) => (
-                  <Link
-                    key={idx}
-                    href={`/rumah/${item.houseCode}`}
-                    className="flex items-center justify-between p-3 rounded-xl bg-stone-50 dark:bg-[#1e222d] hover:bg-orange-50/60 dark:hover:bg-orange-950/30 border border-stone-200/60 dark:border-stone-700 hover:border-orange-200 dark:hover:border-orange-800/60 transition-all group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center font-black text-orange-600 dark:text-orange-400 text-xs shadow-xs">
-                        {item.houseCode}
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-stone-900 dark:text-stone-100 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                          Blok {item.houseCode}
+              <div className="overflow-y-auto max-h-[360px] space-y-2 pr-1">
+                {arrears.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center text-center p-8 text-stone-400 dark:text-stone-500">
+                    <CheckCircle2 className="w-10 h-10 text-emerald-500 mb-2" />
+                    <p className="text-sm font-bold text-stone-700 dark:text-stone-200">{t('dash.all_paid')}</p>
+                    <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">{t('dash.no_arrears')}</p>
+                  </div>
+                ) : (
+                  arrears.map((item: any, idx: number) => (
+                    <Link
+                      key={idx}
+                      href={`/rumah/${item.houseCode}`}
+                      className="flex items-center justify-between p-3 rounded-xl bg-stone-50 dark:bg-[#1e222d] hover:bg-orange-50/60 dark:hover:bg-orange-950/30 border border-stone-200/60 dark:border-stone-700 hover:border-orange-200 dark:hover:border-orange-800/60 transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center font-black text-orange-600 dark:text-orange-400 text-xs shadow-xs">
+                          {item.houseCode}
                         </div>
-                        <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">
-                          {item.monthsOwed.length} bulan: {item.monthsOwed.slice(0, 2).map((m: string) => formatBulanTahun(m, true)).join(', ')}
-                          {item.monthsOwed.length > 2 && '...'}
+                        <div>
+                          <div className="text-xs font-bold text-stone-900 dark:text-stone-100 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                            Blok {item.houseCode}
+                          </div>
+                          <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">
+                            {item.monthsOwed.length} bulan: {item.monthsOwed.slice(0, 2).map((m: string) => formatBulanTahun(m, true)).join(', ')}
+                            {item.monthsOwed.length > 2 && '...'}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs font-black text-rose-600 dark:text-rose-400">
-                        {formatRupiah(item.totalOwed)}
+                      <div className="text-right">
+                        <div className="text-xs font-black text-rose-600 dark:text-rose-400">
+                          {formatRupiah(item.totalOwed)}
+                        </div>
+                        <span className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold group-hover:underline">Lihat Detail →</span>
                       </div>
-                      <span className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold group-hover:underline">Lihat Detail →</span>
-                    </div>
-                  </Link>
-                ))
-              )}
+                    </Link>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800">
+              <Link
+                href="/rekap-iuran"
+                className="w-full py-2.5 flex items-center justify-center text-xs font-bold text-orange-700 dark:text-orange-300 hover:text-orange-800 dark:hover:text-orange-200 bg-orange-50 dark:bg-orange-950/50 hover:bg-orange-100/80 dark:hover:bg-orange-900/60 border border-orange-200 dark:border-orange-900/60 rounded-xl transition-colors"
+              >
+                <span>{t('dash.view_matrix')}</span>
+              </Link>
             </div>
           </div>
-
-          <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800">
-            <Link
-              href="/rekap-iuran"
-              className="w-full py-2.5 flex items-center justify-center text-xs font-bold text-orange-700 dark:text-orange-300 hover:text-orange-800 dark:hover:text-orange-200 bg-orange-50 dark:bg-orange-950/50 hover:bg-orange-100/80 dark:hover:bg-orange-900/60 border border-orange-200 dark:border-orange-900/60 rounded-xl transition-colors"
-            >
-              <span>{t('dash.view_matrix')}</span>
-            </Link>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
