@@ -89,10 +89,10 @@ export default function Navbar() {
     <>
       {/* Top Navbar */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#12141a]/95 backdrop-blur-md border-b border-stone-200/80 dark:border-stone-800 shadow-[0_1px_3px_rgba(0,0,0,0.03)] w-full">
-        <div className="w-full px-3 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
+        <div className="w-full px-2.5 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16 gap-1.5 sm:gap-4">
             {/* Brand Logo & Cluster Name - Ujung Kiri (Far Left) */}
-            <Link href="/" prefetch={false} className="flex items-center gap-2.5 sm:gap-3 shrink-0 group">
+            <Link href="/" prefetch={false} className="flex items-center gap-2 sm:gap-3 min-w-0 group shrink-0">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white dark:bg-stone-900 border border-stone-200/90 dark:border-stone-700 p-1 sm:p-1.5 flex items-center justify-center shadow-xs shrink-0 group-hover:border-orange-400 group-hover:shadow-sm transition-all">
                 <img
                   src="/images/paradessa-emblem.png"
@@ -100,14 +100,14 @@ export default function Navbar() {
                   className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                 />
               </div>
-              <div className="flex flex-col">
-                <span className="font-extrabold text-stone-950 dark:text-white text-sm sm:text-base tracking-tight leading-tight whitespace-nowrap group-hover:text-orange-600 transition-colors">
+              <div className="flex flex-col min-w-0 max-w-[155px] xs:max-w-[200px] sm:max-w-none">
+                <span className="font-extrabold text-stone-950 dark:text-white text-xs sm:text-base tracking-tight leading-tight truncate group-hover:text-orange-600 transition-colors">
                   Paradessa Household Dues
                 </span>
-                <div className="text-[10px] sm:text-[11px] text-stone-500 dark:text-stone-400 flex items-center gap-1 font-medium leading-none mt-0.5">
-                  <span className="text-orange-600 dark:text-orange-400 font-bold whitespace-nowrap">Paradessa Habitat</span>
+                <div className="text-[9px] sm:text-[11px] text-stone-500 dark:text-stone-400 flex items-center gap-1 font-medium leading-none mt-0.5">
+                  <span className="text-orange-600 dark:text-orange-400 font-bold truncate">Paradessa Habitat</span>
                   <span className="hidden sm:inline w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-600 shrink-0"></span>
-                  <span className="hidden sm:inline whitespace-nowrap text-stone-400 dark:text-stone-500">Pananjung, Cangkuang</span>
+                  <span className="hidden sm:inline truncate text-stone-400 dark:text-stone-500">Pananjung, Cangkuang</span>
                 </div>
               </div>
             </Link>
@@ -126,8 +126,8 @@ export default function Navbar() {
                         prefetch={false}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                           isActive
-                            ? 'bg-orange-50 text-orange-600 shadow-sm'
-                            : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                            ? 'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 shadow-sm'
+                            : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800'
                         }`}
                       >
                         <Icon className="w-4 h-4" />
@@ -143,8 +143,8 @@ export default function Navbar() {
                       onClick={() => setDropdownOpen(!dropdownOpen)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                         isSecondaryActive || dropdownOpen
-                          ? 'bg-orange-50 text-orange-600 font-bold'
-                          : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                          ? 'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 font-bold'
+                          : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800'
                       }`}
                     >
                       <span>{t('nav.more')}</span>
@@ -152,8 +152,8 @@ export default function Navbar() {
                     </button>
 
                     {dropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-stone-200/90 py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
-                        <div className="px-3 py-1.5 text-[10px] font-bold text-stone-400 uppercase tracking-wider border-b border-stone-100 mb-1">
+                      <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#16181d] rounded-2xl shadow-xl border border-stone-200/90 dark:border-stone-800 py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+                        <div className="px-3 py-1.5 text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider border-b border-stone-100 dark:border-stone-800 mb-1">
                           {language === 'en' ? 'Additional Tools & Settings' : 'Alat Tambahan & Pengaturan'}
                         </div>
                         {secondaryNavItems.map((item) => {
@@ -164,16 +164,16 @@ export default function Navbar() {
                               key={item.href}
                               href={item.href}
                               onClick={() => setDropdownOpen(false)}
-                              className={`flex items-start gap-3 px-3 py-2 hover:bg-stone-50 transition-colors ${
-                                isActive ? 'bg-orange-50/70 text-orange-600' : 'text-stone-700'
+                              className={`flex items-start gap-3 px-3 py-2 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors ${
+                                isActive ? 'bg-orange-50/70 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400' : 'text-stone-700 dark:text-stone-300'
                               }`}
                             >
-                              <div className={`p-1.5 rounded-lg mt-0.5 ${isActive ? 'bg-orange-100 text-orange-600' : 'bg-stone-100 text-stone-600'}`}>
+                              <div className={`p-1.5 rounded-lg mt-0.5 ${isActive ? 'bg-orange-100 dark:bg-orange-900/60 text-orange-600 dark:text-orange-400' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400'}`}>
                                 <Icon className="w-4 h-4" />
                               </div>
                               <div>
                                 <span className="font-bold text-xs block">{item.label}</span>
-                                <span className="text-[11px] text-stone-400 leading-tight block">{item.desc}</span>
+                                <span className="text-[11px] text-stone-400 dark:text-stone-500 leading-tight block">{item.desc}</span>
                               </div>
                             </Link>
                           );
@@ -192,8 +192,8 @@ export default function Navbar() {
                       href={item.href}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                         isActive
-                          ? 'bg-orange-50 text-orange-600 shadow-sm'
-                          : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                          ? 'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 shadow-sm'
+                          : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -205,16 +205,16 @@ export default function Navbar() {
             </nav>
 
             {/* Right Controls: Theme, Language, Actions, & User Pill */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {/* Language Switch Button (ID / EN) */}
               <button
                 type="button"
                 onClick={toggleLanguage}
                 title={t('lang.switch')}
-                className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs border border-stone-200/90 transition-all cursor-pointer"
+                className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 font-bold text-xs border border-stone-200/90 dark:border-stone-700 transition-all cursor-pointer"
               >
-                <Globe className="w-3.5 h-3.5 text-stone-500" />
-                <span className="text-[11px] font-black uppercase tracking-wider">{language}</span>
+                <Globe className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400" />
+                <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider">{language}</span>
               </button>
 
               {/* Dark Mode Toggle Button */}
@@ -222,13 +222,13 @@ export default function Navbar() {
                 type="button"
                 onClick={toggleTheme}
                 title={isDark ? t('theme.toggle_light') : t('theme.toggle_dark')}
-                className="p-1.5 sm:p-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200/90 transition-all cursor-pointer"
+                className="p-1.5 sm:p-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 border border-stone-200/90 dark:border-stone-700 transition-all cursor-pointer"
                 aria-label="Toggle dark mode"
               >
                 {isDark ? (
-                  <Sun className="w-4 h-4 text-amber-500 animate-in spin-in-180 duration-200" />
+                  <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 animate-in spin-in-180 duration-200" />
                 ) : (
-                  <Moon className="w-4 h-4 text-stone-600 animate-in spin-in-180 duration-200" />
+                  <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600 dark:text-stone-400 animate-in spin-in-180 duration-200" />
                 )}
               </button>
 
@@ -244,28 +244,28 @@ export default function Navbar() {
                   </Link>
                   <Link
                     href="/pengeluaran"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs border border-stone-200 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 font-bold text-xs border border-stone-200 dark:border-stone-700 transition-colors cursor-pointer"
                   >
-                    <Receipt className="w-3.5 h-3.5 text-stone-500" />
+                    <Receipt className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400" />
                     <span>{t('nav.expense')}</span>
                   </Link>
                 </div>
               )}
 
-              {/* User Account Info & Logout */}
+              {/* User Account Info & Logout (Desktop / Tablet only; mobile has it in drawer) */}
               {user ? (
-                <div className="flex items-center gap-1 sm:gap-1.5 bg-stone-100 pl-2 pr-1.5 sm:pl-2.5 sm:pr-1 py-1 rounded-xl border border-stone-200/80">
+                <div className="hidden sm:flex items-center gap-1 sm:gap-1.5 bg-stone-100 dark:bg-stone-800 pl-2 pr-1.5 sm:pl-2.5 sm:pr-1 py-1 rounded-xl border border-stone-200/80 dark:border-stone-700">
                   <div className="flex items-center gap-1 sm:gap-1.5 text-xs">
                     {user.role === 'admin' ? (
                       <ShieldCheck className="w-3.5 h-3.5 text-orange-600 shrink-0" />
                     ) : (
                       <Home className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                     )}
-                    <span className="font-bold text-stone-900 max-w-[65px] sm:max-w-[100px] truncate text-[11px] sm:text-xs">
+                    <span className="font-bold text-stone-900 dark:text-stone-200 max-w-[65px] sm:max-w-[100px] truncate text-[11px] sm:text-xs">
                       {user.username}
                     </span>
                     {user.house_code && (
-                      <span className="hidden sm:inline-block text-[10px] bg-white px-1.5 py-0.5 rounded border border-stone-200 font-bold text-stone-700">
+                      <span className="hidden sm:inline-block text-[10px] bg-white dark:bg-stone-900 px-1.5 py-0.5 rounded border border-stone-200 dark:border-stone-700 font-bold text-stone-700 dark:text-stone-300">
                         {user.house_code}
                       </span>
                     )}
@@ -275,7 +275,7 @@ export default function Navbar() {
                     type="button"
                     onClick={logout}
                     title={t('nav.logout')}
-                    className="hidden sm:inline-flex p-1 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-white transition-colors cursor-pointer ml-1"
+                    className="p-1 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-white dark:hover:bg-stone-700 transition-colors cursor-pointer ml-1"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                   </button>
@@ -293,7 +293,7 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-1.5 sm:p-2 rounded-xl bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-200 cursor-pointer transition-colors"
+                className="lg:hidden p-1.5 sm:p-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-200 dark:border-stone-700 cursor-pointer transition-colors"
                 aria-label="Toggle menu"
               >
                 {mobileMenuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
@@ -433,27 +433,27 @@ export default function Navbar() {
 
       {/* Floating Bottom Navigation Bar for Mobile */}
       <div className="lg:hidden fixed bottom-2 sm:bottom-3 left-0 right-0 z-40 px-3 max-w-md mx-auto pointer-events-none">
-        <div className="bg-white/95 backdrop-blur-xl border border-stone-200/90 shadow-2xl rounded-2xl flex items-center justify-around py-1.5 sm:py-2 px-1 text-[11px] text-stone-500 pointer-events-auto">
+        <div className="bg-white/95 dark:bg-[#16181d]/95 backdrop-blur-xl border border-stone-200/90 dark:border-stone-800 shadow-2xl rounded-2xl flex items-center justify-around py-1.5 sm:py-2 px-1 text-[11px] text-stone-500 dark:text-stone-400 pointer-events-auto">
           <Link
             href="/"
             onClick={() => setMobileMenuOpen(false)}
             className={`flex flex-col items-center gap-0.5 px-2.5 sm:px-3 py-1 rounded-xl transition-colors ${
-              pathname === '/' ? 'text-orange-600 font-extrabold' : 'hover:text-stone-900 font-medium'
+              pathname === '/' ? 'text-orange-600 dark:text-orange-400 font-extrabold' : 'hover:text-stone-900 dark:hover:text-stone-200 font-medium'
             }`}
           >
             <Home className="w-5 h-5" />
-            <span className="text-[10px] sm:text-[11px]">Beranda</span>
+            <span className="text-[10px] sm:text-[11px]">{t('nav.dashboard')}</span>
           </Link>
 
           <Link
             href="/buku-kas"
             onClick={() => setMobileMenuOpen(false)}
             className={`flex flex-col items-center gap-0.5 px-2.5 sm:px-3 py-1 rounded-xl transition-colors ${
-              pathname === '/buku-kas' ? 'text-orange-600 font-extrabold' : 'hover:text-stone-900 font-medium'
+              pathname === '/buku-kas' ? 'text-orange-600 dark:text-orange-400 font-extrabold' : 'hover:text-stone-900 dark:hover:text-stone-200 font-medium'
             }`}
           >
             <BookOpen className="w-5 h-5" />
-            <span className="text-[10px] sm:text-[11px]">Buku Kas</span>
+            <span className="text-[10px] sm:text-[11px]">{t('nav.ledger')}</span>
           </Link>
 
           {/* Quick Pay Center Button */}
@@ -461,7 +461,7 @@ export default function Navbar() {
             <Link
               href="/pembayaran"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex flex-col items-center justify-center -mt-5 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 text-white shadow-lg shadow-orange-600/35 border-2 border-white hover:scale-105 active:scale-95 transition-all"
+              className="flex flex-col items-center justify-center -mt-5 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 text-white shadow-lg shadow-orange-600/35 border-2 border-white dark:border-stone-900 hover:scale-105 active:scale-95 transition-all"
               title="Catat Pembayaran"
             >
               <Plus className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
@@ -472,18 +472,18 @@ export default function Navbar() {
             href="/rekap-iuran"
             onClick={() => setMobileMenuOpen(false)}
             className={`flex flex-col items-center gap-0.5 px-2.5 sm:px-3 py-1 rounded-xl transition-colors ${
-              pathname === '/rekap-iuran' ? 'text-orange-600 font-extrabold' : 'hover:text-stone-900 font-medium'
+              pathname === '/rekap-iuran' ? 'text-orange-600 dark:text-orange-400 font-extrabold' : 'hover:text-stone-900 dark:hover:text-stone-200 font-medium'
             }`}
           >
             <CalendarCheck className="w-5 h-5" />
-            <span className="text-[10px] sm:text-[11px]">Rekap</span>
+            <span className="text-[10px] sm:text-[11px]">{t('nav.dues')}</span>
           </Link>
 
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className={`flex flex-col items-center gap-0.5 px-2.5 sm:px-3 py-1 rounded-xl transition-colors cursor-pointer ${
-              mobileMenuOpen ? 'text-orange-600 font-extrabold' : 'hover:text-stone-900 font-medium'
+              mobileMenuOpen ? 'text-orange-600 dark:text-orange-400 font-extrabold' : 'hover:text-stone-900 dark:hover:text-stone-200 font-medium'
             }`}
           >
             <Menu className="w-5 h-5" />

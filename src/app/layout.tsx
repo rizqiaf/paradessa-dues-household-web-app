@@ -30,7 +30,7 @@ export const viewport: Viewport = {
   themeColor: '#ea580c',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -39,13 +39,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className="h-full bg-[#fbfbfa] dark:bg-[#0f1115]">
-      <body className="min-h-full flex flex-col bg-[#fbfbfa] dark:bg-[#0f1115] text-stone-900 dark:text-stone-100 antialiased font-sans transition-colors duration-200">
+    <html lang="id" className="h-full bg-[#fbfbfa] dark:bg-[#0f1115] overflow-x-hidden">
+      <body className="min-h-full flex flex-col bg-[#fbfbfa] dark:bg-[#0f1115] text-stone-900 dark:text-stone-100 antialiased font-sans transition-colors duration-200 overflow-x-hidden max-w-full">
         <ThemeProvider>
           <LanguageProvider>
             <RoleProvider>
               <Navbar />
-              <main className="flex-1 pb-16 sm:pb-12 lg:pb-8">{children}</main>
+              <main className="flex-1 w-full max-w-full overflow-x-hidden pb-24 sm:pb-16 lg:pb-8">{children}</main>
               <Footer />
             </RoleProvider>
           </LanguageProvider>

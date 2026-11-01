@@ -219,16 +219,16 @@ export default function BukuKasPage() {
             </div>
 
             {/* Status Badge & Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {ledgerData?.status === 'terkunci' ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
                   <Lock className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Terkunci (Laporan Terbit)</span>
+                  <span>Terkunci</span>
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 border border-stone-200 text-stone-600 text-xs font-bold">
                   <Unlock className="w-3.5 h-3.5 text-stone-500" />
-                  <span>Draft (Buka)</span>
+                  <span>Draft</span>
                 </span>
               )}
 
@@ -236,7 +236,7 @@ export default function BukuKasPage() {
                 type="button"
                 onClick={fetchLedger}
                 disabled={loading}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-xs font-bold text-stone-700 shadow-xs transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-xs font-bold text-stone-700 shadow-xs transition-colors cursor-pointer"
                 title="Segarkan data transaksi terbaru"
               >
                 <RotateCcw className={`w-3.5 h-3.5 text-stone-500 ${loading ? 'animate-spin text-orange-600' : ''}`} />
@@ -246,10 +246,10 @@ export default function BukuKasPage() {
               <button
                 type="button"
                 onClick={handleExportExcel}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-xs font-bold text-stone-700 shadow-xs transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-xs font-bold text-stone-700 shadow-xs transition-colors cursor-pointer"
               >
                 <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                <span>Export Excel</span>
+                <span>Excel</span>
               </button>
             </div>
           </div>

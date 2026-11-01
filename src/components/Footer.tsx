@@ -33,10 +33,10 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto border-t border-stone-200/90 dark:border-stone-800 bg-white/90 dark:bg-[#12141a]/95 backdrop-blur-xs text-stone-600 dark:text-stone-400 text-xs transition-colors duration-200">
+    <footer className="mt-auto border-t border-stone-200/90 dark:border-stone-800 bg-white/90 dark:bg-[#12141a]/95 backdrop-blur-xs text-stone-600 dark:text-stone-400 text-xs transition-colors duration-200 pb-16 lg:pb-0">
       {/* Main Footer Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
           {/* Column 1: Brand & Cluster Info */}
           <div className="space-y-3.5 sm:col-span-2 lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5 group">
@@ -205,14 +205,14 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar: Copyright & Credit & Quick Switchers */}
-        <div className="mt-8 pt-6 border-t border-stone-100 dark:border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-stone-400 dark:text-stone-500">
+        <div className="mt-8 pt-6 border-t border-stone-100 dark:border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-stone-400 dark:text-stone-500 text-center sm:text-left">
           <p>© {currentYear} {t('footer.rights')}</p>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
             {/* Quick Switchers in Footer */}
             <button
               type="button"
               onClick={toggleLanguage}
-              className="hover:text-orange-600 transition-colors flex items-center gap-1 font-bold"
+              className="hover:text-orange-600 transition-colors flex items-center gap-1 font-bold cursor-pointer"
             >
               <Globe className="w-3.5 h-3.5" />
               <span>{language === 'id' ? 'English (EN)' : 'Bahasa Indonesia (ID)'}</span>
@@ -221,7 +221,7 @@ export default function Footer() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="hover:text-orange-600 transition-colors flex items-center gap-1 font-bold"
+              className="hover:text-orange-600 transition-colors flex items-center gap-1 font-bold cursor-pointer"
             >
               {isDark ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5" />}
               <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>

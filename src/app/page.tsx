@@ -277,25 +277,25 @@ export default function DashboardPage() {
       )}
 
       {/* Main Grid: 12-Month Bar Chart & Arrears Watchlist */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch min-w-0 max-w-full">
         {/* 12-Month Chart */}
-        <div className="lg:col-span-2 bg-white border border-stone-200/80 rounded-3xl p-5 sm:p-7 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1">
+        <div className="min-w-0 max-w-full lg:col-span-2 bg-white dark:bg-[#16181d] border border-stone-200/80 dark:border-stone-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-3 sm:space-y-4 overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 mb-1">
             <div>
-              <h2 className="text-sm sm:text-base font-extrabold text-stone-900 flex items-center gap-2">
+              <h2 className="text-sm sm:text-base font-extrabold text-stone-900 dark:text-white flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-orange-600 shrink-0" />
                 <span>{t('dash.chart_title')}</span>
               </h2>
-              <p className="text-[11px] sm:text-xs text-stone-500 mt-0.5">{t('dash.chart_sub')}</p>
+              <p className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400 mt-0.5">{t('dash.chart_sub')}</p>
             </div>
             <div className="flex items-center gap-3 sm:gap-4 text-xs font-semibold">
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-emerald-500"></div>
-                <span className="text-stone-700 text-xs">{t('dash.in')}</span>
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-emerald-500"></div>
+                <span className="text-stone-700 dark:text-stone-300 text-xs">{t('dash.in')}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-rose-500"></div>
-                <span className="text-stone-700 text-xs">{t('dash.out')}</span>
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-rose-500"></div>
+                <span className="text-stone-700 dark:text-stone-300 text-xs">{t('dash.out')}</span>
               </div>
             </div>
           </div>
@@ -315,94 +315,100 @@ export default function DashboardPage() {
             ];
 
             return (
-              <div className="overflow-x-auto pb-2 scrollbar-none">
-                <div className="min-w-[540px] sm:min-w-0 relative">
-                  {/* Horizontal Background Guide Lines */}
-                  <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8 pt-12">
-                    {gridLevels.map((lvl, gIdx) => (
-                      <div key={gIdx} className="w-full flex items-center gap-2">
-                        <span className="text-[10px] text-stone-300 font-medium w-16 shrink-0 text-right">
-                          {lvl.label}
-                        </span>
-                        <div className="w-full border-b border-dashed border-stone-200/60"></div>
-                      </div>
-                    ))}
-                    <div className="w-full flex items-center gap-2">
-                      <span className="text-[10px] text-stone-300 font-medium w-16 shrink-0 text-right">Rp 0</span>
-                      <div className="w-full border-b border-stone-200"></div>
-                    </div>
-                  </div>
-
-                  {/* Responsive Bars Plot Area (Taller & spacious) */}
-                  <div className="h-72 sm:h-80 lg:h-[320px] pl-18 flex items-end gap-1 sm:gap-2.5 pt-16 pb-8">
-                    {chartData.map((item: any, idx: number) => {
-                      const masukPct = Math.max(3, Math.min(100, Math.round((item.pemasukan / chartMaxVal) * 100)));
-                      const keluarPct = Math.max(3, Math.min(100, Math.round((item.pengeluaran / chartMaxVal) * 100)));
-                      const isCurrentMonth = item.monthNum === currentMonth;
-
-                      return (
-                        <div
-                          key={idx}
-                          className={`flex-1 flex flex-col items-center justify-end h-full relative group rounded-xl p-1 transition-all ${
-                            isCurrentMonth ? 'bg-orange-50/50 border border-orange-200/60' : 'hover:bg-stone-50/80'
-                          }`}
-                        >
-                          {/* Tooltip positioned safely above without clipping */}
-                          <div className="absolute -top-16 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col bg-stone-900/95 backdrop-blur-md text-[11px] text-white py-2 px-3 rounded-xl shadow-2xl z-30 pointer-events-none border border-stone-700/60 min-w-[135px]">
-                            <div className="font-extrabold text-stone-200 border-b border-stone-800 pb-1 mb-1 flex items-center justify-between gap-2">
-                              <span>{item.month} {currentYear}</span>
-                              {isCurrentMonth && <span className="text-[10px] text-orange-400 font-bold">(Bulan Ini)</span>}
-                            </div>
-                            <div className="flex items-center justify-between text-emerald-400 font-bold">
-                              <span>Masuk:</span>
-                              <span>+{formatRupiah(item.pemasukan)}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-rose-400 font-bold">
-                              <span>Keluar:</span>
-                              <span>-{formatRupiah(item.pengeluaran)}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-stone-300 font-semibold border-t border-stone-800 pt-1 mt-1 text-[10px]">
-                              <span>Saldo Kas:</span>
-                              <span>{formatRupiah(item.saldo)}</span>
-                            </div>
-                            {/* Little Down Arrow */}
-                            <div className="w-2 h-2 bg-stone-900/95 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2 border-r border-b border-stone-700/60"></div>
-                          </div>
-
-                          {/* Dual Bars Container */}
-                          <div className="w-full h-full flex items-end justify-center gap-1 sm:gap-1.5">
-                            {/* Pemasukan (Hijau) */}
-                            <div
-                              className="w-1/2 max-w-[18px] bg-emerald-500 hover:bg-emerald-600 rounded-t-md transition-all shadow-xs"
-                              style={{ height: `${masukPct}%` }}
-                              title={`${item.month} Masuk: ${formatRupiah(item.pemasukan)}`}
-                            ></div>
-                            {/* Pengeluaran (Merah) */}
-                            <div
-                              className="w-1/2 max-w-[18px] bg-rose-500 hover:bg-rose-600 rounded-t-md transition-all shadow-xs"
-                              style={{ height: `${keluarPct}%` }}
-                              title={`${item.month} Keluar: ${formatRupiah(item.pengeluaran)}`}
-                            ></div>
-                          </div>
-
-                          {/* Month Label */}
-                          <span className={`text-[10px] sm:text-xs font-bold mt-2 truncate ${
-                            isCurrentMonth ? 'text-orange-600 font-black' : 'text-stone-500'
-                          }`}>
-                            {item.month}
+              <div className="w-full min-w-0 space-y-1">
+                {/* Mobile scroll hint */}
+                <div className="sm:hidden text-center text-[10px] text-stone-400 dark:text-stone-500 font-medium pb-1 flex items-center justify-center gap-1">
+                  <span>{language === 'en' ? '← Swipe horizontally to view 12 months →' : '← Geser horizontal untuk melihat 12 bulan →'}</span>
+                </div>
+                <div className="w-full overflow-x-auto pb-2 scrollbar-none">
+                  <div className="min-w-[480px] sm:min-w-0 relative">
+                    {/* Horizontal Background Guide Lines */}
+                    <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8 pt-12">
+                      {gridLevels.map((lvl, gIdx) => (
+                        <div key={gIdx} className="w-full flex items-center gap-2">
+                          <span className="text-[9px] sm:text-[10px] text-stone-300 dark:text-stone-600 font-medium w-14 sm:w-16 shrink-0 text-right">
+                            {lvl.label}
                           </span>
+                          <div className="w-full border-b border-dashed border-stone-200/60 dark:border-stone-800"></div>
                         </div>
-                      );
-                    })}
+                      ))}
+                      <div className="w-full flex items-center gap-2">
+                        <span className="text-[9px] sm:text-[10px] text-stone-300 dark:text-stone-600 font-medium w-14 sm:w-16 shrink-0 text-right">Rp 0</span>
+                        <div className="w-full border-b border-stone-200 dark:border-stone-800"></div>
+                      </div>
+                    </div>
+
+                    {/* Responsive Bars Plot Area (Taller & spacious) */}
+                    <div className="h-64 sm:h-80 lg:h-[320px] pl-15 sm:pl-18 flex items-end gap-1 sm:gap-2.5 pt-16 pb-8">
+                      {chartData.map((item: any, idx: number) => {
+                        const masukPct = Math.max(3, Math.min(100, Math.round((item.pemasukan / chartMaxVal) * 100)));
+                        const keluarPct = Math.max(3, Math.min(100, Math.round((item.pengeluaran / chartMaxVal) * 100)));
+                        const isCurrentMonth = item.monthNum === currentMonth;
+
+                        return (
+                          <div
+                            key={idx}
+                            className={`flex-1 flex flex-col items-center justify-end h-full relative group rounded-xl p-1 transition-all ${
+                              isCurrentMonth ? 'bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-800/60' : 'hover:bg-stone-50/80 dark:hover:bg-stone-800/50'
+                            }`}
+                          >
+                            {/* Tooltip positioned safely above without clipping */}
+                            <div className="absolute -top-16 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col bg-stone-900/95 dark:bg-stone-900 backdrop-blur-md text-[11px] text-white py-2 px-3 rounded-xl shadow-2xl z-30 pointer-events-none border border-stone-700/60 min-w-[135px]">
+                              <div className="font-extrabold text-stone-200 border-b border-stone-800 pb-1 mb-1 flex items-center justify-between gap-2">
+                                <span>{item.month} {currentYear}</span>
+                                {isCurrentMonth && <span className="text-[10px] text-orange-400 font-bold">(Bulan Ini)</span>}
+                              </div>
+                              <div className="flex items-center justify-between text-emerald-400 font-bold">
+                                <span>Masuk:</span>
+                                <span>+{formatRupiah(item.pemasukan)}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-rose-400 font-bold">
+                                <span>Keluar:</span>
+                                <span>-{formatRupiah(item.pengeluaran)}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-stone-300 font-semibold border-t border-stone-800 pt-1 mt-1 text-[10px]">
+                                <span>Saldo Kas:</span>
+                                <span>{formatRupiah(item.saldo)}</span>
+                              </div>
+                              {/* Little Down Arrow */}
+                              <div className="w-2 h-2 bg-stone-900/95 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2 border-r border-b border-stone-700/60"></div>
+                            </div>
+
+                            {/* Dual Bars Container */}
+                            <div className="w-full h-full flex items-end justify-center gap-1 sm:gap-1.5">
+                              {/* Pemasukan (Hijau) */}
+                              <div
+                                className="w-1/2 max-w-[18px] bg-emerald-500 hover:bg-emerald-600 rounded-t-md transition-all shadow-xs"
+                                style={{ height: `${masukPct}%` }}
+                                title={`${item.month} Masuk: ${formatRupiah(item.pemasukan)}`}
+                              ></div>
+                              {/* Pengeluaran (Merah) */}
+                              <div
+                                className="w-1/2 max-w-[18px] bg-rose-500 hover:bg-rose-600 rounded-t-md transition-all shadow-xs"
+                                style={{ height: `${keluarPct}%` }}
+                                title={`${item.month} Keluar: ${formatRupiah(item.pengeluaran)}`}
+                              ></div>
+                            </div>
+
+                            {/* Month Label */}
+                            <span className={`text-[10px] sm:text-xs font-bold mt-2 truncate ${
+                              isCurrentMonth ? 'text-orange-600 dark:text-orange-400 font-black' : 'text-stone-500 dark:text-stone-400'
+                            }`}>
+                              {item.month}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
             );
           })()}
 
-          <div className="flex items-center justify-between text-xs text-stone-500 pt-1 border-t border-stone-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-stone-500 dark:text-stone-400 pt-1 border-t border-stone-100 dark:border-stone-800 gap-2">
             <span>{t('dash.source_info')}</span>
-            <Link href="/buku-kas" className="text-orange-600 hover:text-orange-700 font-bold flex items-center gap-1">
+            <Link href="/buku-kas" className="text-orange-600 dark:text-orange-400 hover:text-orange-700 font-bold flex items-center gap-1">
               <span>{t('dash.view_ledger')}</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </Link>
@@ -410,7 +416,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Houses in Arrears Watchlist */}
-        <div className="bg-white border border-stone-200/80 rounded-3xl p-5 sm:p-7 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-4">
+        <div className="min-w-0 max-w-full lg:col-span-1 bg-white dark:bg-[#16181d] border border-stone-200/80 dark:border-stone-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-4 overflow-hidden">
           <div>
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-base font-extrabold text-stone-900 flex items-center gap-2">
